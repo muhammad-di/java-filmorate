@@ -14,13 +14,13 @@ public class FilmValidationTest {
     private Film film;
 
     @Test
-    public void shouldReturnTrueForFilmNull () {
+    public void shouldReturnTrueForFilmNull() {
         Boolean actual = FilmValidation.validate(null);
         assertTrue(actual);
     }
 
     @Test
-    public void shouldReturnTrueForNameBlank(){
+    public void shouldReturnTrueForNameBlank() {
         film = Film.builder()
                 .id(1)
                 .name("  ")
@@ -34,7 +34,7 @@ public class FilmValidationTest {
     }
 
     @Test
-    public void shouldReturnTrueForNameEmpty(){
+    public void shouldReturnTrueForNameEmpty() {
         film = Film.builder()
                 .id(1)
                 .name("")
@@ -48,7 +48,7 @@ public class FilmValidationTest {
     }
 
     @Test
-    public void shouldReturnTrueForNameNull(){
+    public void shouldReturnTrueForNameNull() {
         film = Film.builder()
                 .id(1)
                 .name(null)
@@ -62,7 +62,7 @@ public class FilmValidationTest {
     }
 
     @Test
-    public void shouldReturnFalseForNameFiledIn(){
+    public void shouldReturnFalseForNameFiledIn() {
         film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
