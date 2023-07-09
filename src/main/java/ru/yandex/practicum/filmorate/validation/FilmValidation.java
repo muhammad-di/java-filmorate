@@ -11,7 +11,7 @@ public class FilmValidation {
     private final static LocalDate MIN_DATE_OF_RELEASE = LocalDate.of(1895, Month.DECEMBER, 28);
     private final static Integer MIN_FILM_DURATION = 1;
 
-    public static Boolean validate (final Film film) {
+    public static Boolean validate(final Film film) {
         return film == null
                 || film.getName() == null
                 || film.getName().isBlank()
