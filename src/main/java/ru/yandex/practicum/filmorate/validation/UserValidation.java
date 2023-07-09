@@ -5,7 +5,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 
 public class UserValidation {
-    private final static LocalDate DATE_IN_FUTURE = LocalDate.now();
+    private static final LocalDate DATE_IN_FUTURE = LocalDate.now();
 
     public static Boolean validate(final User user) {
         return user == null
