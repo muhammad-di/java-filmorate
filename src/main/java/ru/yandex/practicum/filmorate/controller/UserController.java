@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exeption.InvalidUserPropertiesException;
 import ru.yandex.practicum.filmorate.exeption.UserAlreadyExistException;
@@ -10,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -23,27 +25,32 @@ public class UserController {
     @PostMapping
     public User create(@RequestBody User user) throws InvalidUserPropertiesException, UserAlreadyExistException {
         if (UserValidation.validate(user)) {
+            log.info("User validation error");
             throw new InvalidUserPropertiesException("Invalid properties for a user", 406);
         }
         if (users.containsKey(user.getId())) {
+            log.info("User already exists error");
             throw new UserAlreadyExistException("User already exists", 409);
         }
         if (user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
+        log.info("User entity with id {} and name {} was created", user.getId(), user.getName());
         return users.get(user.getId());
     }
 
     @PutMapping
     public User update(@RequestBody User user) throws InvalidUserPropertiesException {
         if (UserValidation.validate(user)) {
+            log.info("User validation error");
             throw new InvalidUserPropertiesException("Invalid name if a film", 406);
         }
         if (user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
+        log.info("User entity with id {} and name {} was created", user.getId(), user.getName());
         return users.get(user.getId());
     }
 }
