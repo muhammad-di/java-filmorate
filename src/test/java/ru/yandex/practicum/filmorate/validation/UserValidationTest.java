@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.validation;
 
-import org.assertj.core.error.ShouldBeTrue;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.User;
 
