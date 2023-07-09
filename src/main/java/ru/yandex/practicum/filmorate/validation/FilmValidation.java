@@ -13,6 +13,7 @@ public class FilmValidation {
 
     public static Boolean validate (final Film film) {
         return film == null
+                || film.getName() == null
                 || film.getName().isBlank()
                 || film.getDescription().length() > MAX_LENGTH_OF_FILM_DESCRIPTION
                 || film.getReleaseDate().isBefore(MIN_DATE_OF_RELEASE)

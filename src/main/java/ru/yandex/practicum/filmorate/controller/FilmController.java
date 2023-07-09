@@ -6,8 +6,6 @@ import ru.yandex.practicum.filmorate.exeption.InvalidFilmPropertiesException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.validation.FilmValidation;
 
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.*;
 
 @RestController
