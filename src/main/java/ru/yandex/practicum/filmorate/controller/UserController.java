@@ -4,8 +4,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exeption.InvalidUserPropertiesException;
 import ru.yandex.practicum.filmorate.exeption.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.validation.UserValidation;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +14,6 @@ import java.util.Map;
 @RequestMapping("/users")
 public class UserController {
     private final Map<Integer, User> users = new HashMap<>();
-    private final static LocalDate DATE_IN_FUTURE = LocalDate.now();
 
     @GetMapping
     public Collection<User> findAll() {
@@ -23,12 +22,7 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User user) throws InvalidUserPropertiesException, UserAlreadyExistException {
-        if (user == null
-                || user.getEmail().isBlank()
-                || !user.getEmail().contains("@")
-                || user.getLogin().isBlank()
-                || user.getLogin().contains(" ")
-                || user.getBirthday().isAfter(LocalDate.now())) {
+        if (UserValidation.validate(user)) {
             throw new InvalidUserPropertiesException("Invalid properties for a user", 406);
         }
         if (users.containsKey(user.getId())) {
@@ -43,12 +37,7 @@ public class UserController {
 
     @PutMapping
     public User update(@RequestBody User user) throws InvalidUserPropertiesException {
-        if (user == null
-                || user.getEmail().isBlank()
-                || !user.getEmail().contains("@")
-                || user.getLogin().isBlank()
-                || user.getLogin().contains(" ")
-                || user.getBirthday().isAfter(DATE_IN_FUTURE)) {
+        if (UserValidation.validate(user)) {
             throw new InvalidUserPropertiesException("Invalid name if a film", 406);
         }
         if (user.getName().isBlank()) {
