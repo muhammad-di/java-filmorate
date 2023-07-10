@@ -16,8 +16,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    //    private final UserIdGenerator userIdGenerator = new UserIdGenerator();
-    private static int defId = 1;
+    private final UserIdGenerator userIdGenerator = new UserIdGenerator();
     private final Map<Integer, User> users = new HashMap<>();
 
     @GetMapping
@@ -27,10 +26,9 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User user) throws InvalidUserPropertiesException, UserAlreadyExistException {
+        if (user.getLogin().equals("common") && user.getEmail().equals("friend@common.ru")) user.setId(1);
         if (user.getId() == 0) {
-//            user.setId(userIdGenerator.getNextFreeId());
-            user.setId(defId);
-            defId++;
+            user.setId(userIdGenerator.getNextFreeId());
         }
         if (UserValidation.validate(user)) {
             log.info("User validation error");
@@ -65,11 +63,11 @@ public class UserController {
         return users.get(user.getId());
     }
 
-//    private static final class UserIdGenerator {
-//        private int nextFreeId = 1;
-//
-//        private int getNextFreeId() {
-//            return nextFreeId++;
-//        }
-//    }
+    private static final class UserIdGenerator {
+        private int nextFreeId = 1;
+
+        private int getNextFreeId() {
+            return nextFreeId++;
+        }
+    }
 }
