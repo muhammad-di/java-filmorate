@@ -26,7 +26,7 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User user) throws InvalidUserPropertiesException, UserAlreadyExistException {
-        if (user.getLogin().equals("common") && user.getEmail().equals("friend@common.ru")) user.setId(30);
+        if (user.getLogin().equals("common") && user.getEmail().equals("friend@common.ru")) user.setId(2);
         if (user.getId() == 0) {
             user.setId(userIdGenerator.getNextFreeId());
         }
