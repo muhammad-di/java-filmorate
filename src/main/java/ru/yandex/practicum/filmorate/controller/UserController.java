@@ -48,8 +48,8 @@ public class UserController {
 
     @PutMapping
     public User update(@RequestBody User user) throws InvalidUserPropertiesException {
-        if (user.getId() == 0) {
-            user.setId(userIdGenerator.getNextFreeId());
+        if (!users.containsKey(user.getId())) {
+            throw new RuntimeException();
         }
         if (UserValidation.validate(user)) {
             log.info("User validation error");
