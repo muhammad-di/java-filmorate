@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Data
 @Builder
-public class User implements UserInterface {
+public class User {
     private final int id;
     private final String login;
     private final LocalDate birthday;

@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 @Data
 @Builder
-public class UserDto implements UserInterface {
+public class UserDto {
     private final String login;
     private final LocalDate birthday;
     @NonNull
