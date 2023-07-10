@@ -11,7 +11,6 @@ import java.time.Month;
 
 public class FilmValidationTest {
 
-    private Film film;
 
     @Test
     public void shouldReturnTrueForFilmNull() {
@@ -21,7 +20,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnTrueForNameBlank() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("  ")
                 .description("Lucky Number Slevin (also known as The Wrong Man in Australia) is a 2006 neo-noir crime" +
@@ -35,7 +34,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnTrueForNameEmpty() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("")
                 .description("Lucky Number Slevin (also known as The Wrong Man in Australia) is a 2006 neo-noir crime" +
@@ -49,7 +48,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnTrueForNameNull() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name(null)
                 .description("Lucky Number Slevin (also known as The Wrong Man in Australia) is a 2006 neo-noir crime" +
@@ -63,7 +62,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnFalseForNameFiledIn() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lucky Number Slevin (also known as The Wrong Man in Australia) is a 2006 neo-noir crime" +
@@ -77,7 +76,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnTrueForDescriptionLengthExceedingMaxAt201() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lucky Number Slevin (also known as The Wrong Man in Australia) is a 2006 neo-noir crime " +
@@ -92,7 +91,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnTrueForDescriptionLengthExceedingMaxAt267() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lucky Number Slevin (also known as The Wrong Man in Australia) is a 2006 neo-noir crime" +
@@ -107,7 +106,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnTrueForDescriptionLengthExceedingMaxAt317() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lucky Number Slevin (also known as The Wrong Man in Australia) is a 2006 neo-noir" +
@@ -124,7 +123,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnFalseForDescriptionLengthAt200() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lucky Number Slevin (also known as The Wrong Man in Australia) is a 2006 neo-noir crime" +
@@ -139,7 +138,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnFalseForDescriptionLengthAt150() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget" +
@@ -153,7 +152,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnFalseForDescriptionLengthAt10() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lorem ipsu")
@@ -166,7 +165,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnTrueForReleaseDateAt7OctoberOf1700() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lorem ipsu")
@@ -179,7 +178,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnTrueForReleaseDateAt27DecemberOf1895() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lorem ipsu")
@@ -192,7 +191,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnFalseForReleaseDateAt28DecemberOf1895() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lorem ipsu")
@@ -205,7 +204,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnFalseForReleaseDateAt29DecemberOf1895() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lorem ipsu")
@@ -218,7 +217,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnFalseForReleaseDateAt29DecemberOf2006() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lorem ipsu")
@@ -231,7 +230,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnTrueForDuration0Minutes() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lorem ipsu")
@@ -244,7 +243,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnTrueForDurationMinus1Minute() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lorem ipsu")
@@ -257,7 +256,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnTrueForDurationMinus18Minutes() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lorem ipsu")
@@ -270,7 +269,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnFalseForDuration1Minute() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lorem ipsu")
@@ -283,7 +282,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnFalseForDuration2Minutes() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lorem ipsu")
@@ -296,7 +295,7 @@ public class FilmValidationTest {
 
     @Test
     public void shouldReturnFalseForDuration40Minutes() {
-        film = Film.builder()
+        Film film = Film.builder()
                 .id(1)
                 .name("Lucky number Slevin")
                 .description("Lorem ipsu")

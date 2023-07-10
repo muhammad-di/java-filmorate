@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exeption.InvalidUserPropertiesException;
 import ru.yandex.practicum.filmorate.exeption.UserAlreadyExistException;
@@ -10,15 +11,15 @@ import ru.yandex.practicum.filmorate.validation.UserValidation;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
     private final UserIdGenerator userIdGenerator = new UserIdGenerator();
-    private final Map<Integer, User> users = new HashMap<>();
+    private final Map<Integer, User> users = new ConcurrentHashMap<>();
 
     @GetMapping
     public Collection<User> findAll() {
@@ -27,7 +28,6 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User user) throws InvalidUserPropertiesException, UserAlreadyExistException {
-
         if (UserValidation.validate(user)) {
             log.info("User validation error");
             throw new InvalidUserPropertiesException("Invalid properties for a user", 406);
@@ -39,7 +39,7 @@ public class UserController {
         if (user.getId() == 0) {
             user.setId(userIdGenerator.getNextFreeId());
         }
-        if (user.getName() == null || user.getName().isBlank()) {
+        if (!StringUtils.hasText(user.getName())) {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
@@ -50,7 +50,7 @@ public class UserController {
     @PutMapping
     public User update(@RequestBody User user) throws UserDoesNotExistException, InvalidUserPropertiesException {
         if (!users.containsKey(user.getId())) {
-            throw new UserDoesNotExistException("User with such is does not exist",500);
+            throw new UserDoesNotExistException("User with such is does not exist", 500);
         }
         if (UserValidation.validate(user)) {
             log.info("User validation error");
