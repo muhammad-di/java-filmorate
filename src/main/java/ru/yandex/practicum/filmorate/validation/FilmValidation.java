@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.validation;
 
+import org.springframework.util.StringUtils;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
@@ -13,8 +14,7 @@ public class FilmValidation {
 
     public static Boolean validate(final Film film) {
         return film == null
-                || film.getName() == null
-                || film.getName().isBlank()
+                || !StringUtils.hasText(film.getName())
                 || film.getDescription().length() > MAX_LENGTH_OF_FILM_DESCRIPTION
                 || film.getReleaseDate().isBefore(MIN_DATE_OF_RELEASE)
                 || film.getDuration() < MIN_FILM_DURATION;
