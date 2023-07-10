@@ -26,10 +26,7 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User user) throws InvalidUserPropertiesException, UserAlreadyExistException {
-        if (user.getLogin().equals("common") && user.getEmail().equals("friend@common.ru")) user.setId(2);
-        if (user.getId() == 0) {
-            user.setId(userIdGenerator.getNextFreeId());
-        }
+
         if (UserValidation.validate(user)) {
             log.info("User validation error");
             throw new InvalidUserPropertiesException("Invalid properties for a user", 406);
@@ -37,6 +34,9 @@ public class UserController {
         if (users.containsKey(user.getId())) {
             log.info("User already exists error");
             throw new UserAlreadyExistException("User already exists", 409);
+        }
+        if (user.getId() == 0) {
+            user.setId(userIdGenerator.getNextFreeId());
         }
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
