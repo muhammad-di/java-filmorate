@@ -38,7 +38,7 @@ public class UserController {
             log.info("User already exists error");
             throw new UserAlreadyExistException("User already exists", 409);
         }
-        if (user.getName().isBlank() || user.getName().isEmpty()) {
+        if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
