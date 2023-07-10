@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exeption.InvalidUserPropertiesException;
 import ru.yandex.practicum.filmorate.exeption.UserAlreadyExistException;
+import ru.yandex.practicum.filmorate.exeption.UserDoesNotExistException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.validation.UserValidation;
 
@@ -47,9 +48,9 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@RequestBody User user) throws InvalidUserPropertiesException {
+    public User update(@RequestBody User user) throws UserDoesNotExistException, InvalidUserPropertiesException {
         if (!users.containsKey(user.getId())) {
-            throw new RuntimeException();
+            throw new UserDoesNotExistException("User with such is does not exist",500);
         }
         if (UserValidation.validate(user)) {
             log.info("User validation error");
