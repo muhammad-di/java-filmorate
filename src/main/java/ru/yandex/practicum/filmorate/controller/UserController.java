@@ -16,6 +16,8 @@ import java.util.Map;
 @RequestMapping("/users")
 public class UserController {
     private final Map<Integer, User> users = new HashMap<>();
+    private final UserIdGenerator userIdGenerator = new UserIdGenerator();
+
 
     @GetMapping
     public Collection<User> findAll() {
@@ -24,6 +26,9 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User user) throws InvalidUserPropertiesException, UserAlreadyExistException {
+        if (user.getId() == 0) {
+            user.setId(userIdGenerator.getNextFreeId());
+        }
         if (UserValidation.validate(user)) {
             log.info("User validation error");
             throw new InvalidUserPropertiesException("Invalid properties for a user", 406);
@@ -42,6 +47,9 @@ public class UserController {
 
     @PutMapping
     public User update(@RequestBody User user) throws InvalidUserPropertiesException {
+        if (user.getId() == 0) {
+            user.setId(userIdGenerator.getNextFreeId());
+        }
         if (UserValidation.validate(user)) {
             log.info("User validation error");
             throw new InvalidUserPropertiesException("Invalid name if a film", 406);
@@ -52,5 +60,13 @@ public class UserController {
         users.put(user.getId(), user);
         log.info("User entity with id {} and name {} was created", user.getId(), user.getName());
         return users.get(user.getId());
+    }
+
+    private static final class UserIdGenerator {
+        private int nextFreeId = 1;
+
+        private int getNextFreeId() {
+            return nextFreeId++;
+        }
     }
 }
