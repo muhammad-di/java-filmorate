@@ -1,74 +1,80 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exeption.InvalidUserPropertiesException;
-import ru.yandex.practicum.filmorate.exeption.UserAlreadyExistException;
-import ru.yandex.practicum.filmorate.exeption.UserDoesNotExistException;
+import ru.yandex.practicum.filmorate.exeption.*;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.validation.UserValidation;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+
+import static ru.yandex.practicum.filmorate.Constants.MIN_ID;
 
 @Slf4j
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private final UserIdGenerator userIdGenerator = new UserIdGenerator();
-    private final Map<Integer, User> users = new ConcurrentHashMap<>();
+    private final UserService userService;
 
     @GetMapping
     public Collection<User> findAll() {
-        return new ArrayList<>(users.values());
+        return userService.findAll();
     }
 
     @PostMapping
     public User create(@RequestBody User user) throws InvalidUserPropertiesException, UserAlreadyExistException {
-        if (UserValidation.validate(user)) {
-            log.info("User validation error");
-            throw new InvalidUserPropertiesException("Invalid properties for a user", 406);
-        }
-        if (users.containsKey(user.getId())) {
-            log.info("User already exists error");
-            throw new UserAlreadyExistException("User already exists", 409);
-        }
-        if (user.getId() == 0) {
-            user.setId(userIdGenerator.getNextFreeId());
-        }
-        if (!StringUtils.hasText(user.getName())) {
-            user.setName(user.getLogin());
-        }
-        users.put(user.getId(), user);
-        log.info("User entity with id {} and name {} was created", user.getId(), user.getName());
-        return users.get(user.getId());
+        return userService.create(user);
     }
 
     @PutMapping
     public User update(@RequestBody User user) throws UserDoesNotExistException, InvalidUserPropertiesException {
-        if (!users.containsKey(user.getId())) {
-            throw new UserDoesNotExistException("User with such is does not exist", 500);
-        }
-        if (UserValidation.validate(user)) {
-            log.info("User validation error");
-            throw new InvalidUserPropertiesException("Invalid name if a film", 406);
-        }
-        if (user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        users.put(user.getId(), user);
-        log.info("User entity with id {} and name {} was created", user.getId(), user.getName());
-        return users.get(user.getId());
+        return userService.update(user);
     }
 
-    private static final class UserIdGenerator {
-        private int nextFreeId = 1;
-
-        private int getNextFreeId() {
-            return nextFreeId++;
-        }
+    @GetMapping("/{id}/friends")
+    public Collection<User> getAllFriends(@PathVariable Integer id) {
+        return userService.getAllFriends(id);
     }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+        if (id < MIN_ID || friendId < MIN_ID) {
+            String msg = String.format("Path \"/%d/friends/%d\" does not exist", id, friendId);
+            throw new PathNotFoundException(msg);
+        }
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+        if (id < MIN_ID) {
+            throw new IncorrectParameterException("id");
+        }
+        if (friendId < MIN_ID) {
+            throw new IncorrectParameterException("friendId");
+        }
+        userService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
+        if (id < MIN_ID) {
+            throw new IncorrectParameterException("id");
+        }
+        if (otherId < MIN_ID) {
+            throw new IncorrectParameterException("otherId");
+        }
+        return userService.getCommonFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable Integer id) {
+        if (id < MIN_ID) {
+            throw new IncorrectParameterException("id");
+        }
+        return userService.getUserById(id);
+    }
+
 }
