@@ -52,7 +52,7 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .collect(Collectors.toList());
         if (list.size() <= count) {
             return list;
-        };
+        }
         return list.subList(list.size() - count, list.size());
     }
 
