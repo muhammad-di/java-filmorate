@@ -68,15 +68,7 @@ public class FilmService {
     }
 
     public Collection<Film> getMostPopularFilms(Integer count) {
-        List<Film> list = new ArrayList<>(storage.findAll());
-
-        list.sort((x, y) -> {
-            if (x.getLikes() == null) return -1;
-            if (y.getLikes() == null) return 1;
-            return y.getLikes().size() - x.getLikes().size();
-        });
-        if (list.size() <= count) return list;
-        return list.subList(list.size() - count, list.size());
+        return storage.getMostPopularFilms(count);
     }
 
     public Film getFilmById(Integer id) {
