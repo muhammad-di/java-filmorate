@@ -96,7 +96,7 @@ public class FilmDbStorageTests {
 
         Film expected =
                 Film.builder()
-                        .id(4l)
+                        .id(4L)
                         .name("Paddington")
                         .releaseDate(LocalDate.of(2014, 11, 28))
                         .duration(95)
@@ -171,7 +171,8 @@ public class FilmDbStorageTests {
         assertThat(filmOptional).isPresent().hasValue(expected);
         log.info("----------AddLike {}", filmOptional.get());
     }
-//
+
+    //
     @Test
     public void testDeleteLike() {
         Film expected =
@@ -194,7 +195,8 @@ public class FilmDbStorageTests {
         assertThat(filmOptional).isPresent().hasValue(expected);
         log.info("----------DeleteLike {}", filmOptional.get());
     }
-//
+
+    //
     @Test
     public void testGetMostPopularFilms() {
         Collection<Film> expected = List.of(
@@ -247,7 +249,8 @@ public class FilmDbStorageTests {
         assertThat(filmOptional).isPresent().hasValue(expected);
         log.info("----------GetMostPopularFilms {}", filmOptional.get());
     }
-//
+
+    //
     @Test
     public void testContainsFilm() {
         Boolean expected = true;
@@ -256,7 +259,8 @@ public class FilmDbStorageTests {
         assertThat(filmOptional).isPresent().hasValue(expected);
         log.info("----------ContainsFilm {}", filmOptional.get());
     }
-//
+
+    //
     @Test
     public void testContainsFilmFalse() {
         Boolean expected = false;
