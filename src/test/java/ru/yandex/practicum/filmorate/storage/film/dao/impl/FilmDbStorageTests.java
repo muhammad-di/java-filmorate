@@ -32,7 +32,7 @@ public class FilmDbStorageTests {
                         .releaseDate(LocalDate.of(2006, 2, 24))
                         .duration(110)
                         .description("Description of a Lucky Number Slevin movie")
-                        .likes(new HashSet<>())
+                        .likes(new HashSet<>(Set.of(1L, 2L, 4L, 5L, 6L, 7L, 8L, 9L)))
                         .genres(new ArrayList<>())
                         .mpa(Mpa.builder().id(4).name("R").build())
                         .build(),
@@ -42,7 +42,7 @@ public class FilmDbStorageTests {
                         .releaseDate(LocalDate.of(2007, 7, 27))
                         .duration(104)
                         .description("Description of a No Reservations movie")
-                        .likes(new HashSet<>())
+                        .likes(new HashSet<>(Set.of(1L, 2L, 3L, 4L, 5L, 6L)))
                         .genres(new ArrayList<>())
                         .mpa(Mpa.builder().id(2).name("PG").build())
                         .build(),
@@ -52,7 +52,7 @@ public class FilmDbStorageTests {
                         .releaseDate(LocalDate.of(2021, 10, 22))
                         .duration(155)
                         .description("Description of a Dune movie")
-                        .likes(new HashSet<>())
+                        .likes(new HashSet<>(Set.of(1L, 2L, 3L, 4L)))
                         .genres(new ArrayList<>())
                         .mpa(Mpa.builder().id(3).name("PG-13").build())
                         .build()
@@ -72,7 +72,7 @@ public class FilmDbStorageTests {
                         .releaseDate(LocalDate.of(2006, 2, 24))
                         .duration(110)
                         .description("Description of a Lucky Number Slevin movie")
-                        .likes(new HashSet<>())
+                        .likes(new HashSet<>(Set.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L)))
                         .genres(new ArrayList<>())
                         .mpa(Mpa.builder().id(4).name("R").build())
                         .build();
@@ -182,14 +182,11 @@ public class FilmDbStorageTests {
                         .releaseDate(LocalDate.of(2006, 2, 24))
                         .duration(110)
                         .description("Description of a Lucky Number Slevin movie")
-                        .likes(new HashSet<>(Set.of(5L, 1L)))
+                        .likes(new HashSet<>(Set.of(1L, 2L, 4L, 5L, 6L, 7L, 8L, 9L)))
                         .genres(new ArrayList<>())
                         .mpa(Mpa.builder().id(4).name("R").build())
                         .build();
 
-        filmDbStorage.addLike(1L, 3L);
-        filmDbStorage.addLike(1L, 5L);
-        filmDbStorage.addLike(1L, 1L);
         filmDbStorage.deleteLike(1L, 3L);
         Optional<Film> filmOptional = Optional.ofNullable(filmDbStorage.getFilmById(1L));
         assertThat(filmOptional).isPresent().hasValue(expected);

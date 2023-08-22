@@ -21,7 +21,7 @@ public class MpaDbStorageTests {
 
     @Test
     public void testFindAll() {
-        Collection<Mpa> expected =  Set.of(new Mpa(1, "G"),
+        Collection<Mpa> expected =  List.of(new Mpa(1, "G"),
                 new Mpa(2, "PG"),
                 new Mpa(3, "PG-13"),
                 new Mpa(4, "R"),
