@@ -7,6 +7,7 @@ import lombok.NonNull;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Data
 @Builder
@@ -29,5 +30,18 @@ public class User {
 
     public void deleteFriend(Long idOfFriend) {
         friends.remove(idOfFriend);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

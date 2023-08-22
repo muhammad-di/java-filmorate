@@ -42,20 +42,9 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public boolean containsMpa(Integer idOfMpa) {
-        String sqlQuery = "SELECT\n" +
-                "m.RATING_ID AS RATING_ID,\n" +
-                "m.NAME AS RATING_NAME\n" +
-                "FROM MPA m\n" +
-                "WHERE m.RATING_ID = ?";
+        String sqlQuery = "SELECT EXISTS(SELECT 1 FROM mpa WHERE rating_id = ?) AS RATING";
 
-        SqlRowSet sqlRows = jdbcTemplate.queryForRowSet(sqlQuery, idOfMpa);
-        if (sqlRows.next()) {
-            log.info("Найден фильм c id: {}", idOfMpa);
-            return true;
-        } else {
-            log.info("Фильм с идентификатором {} не найден.", idOfMpa);
-            return false;
-        }
+        return jdbcTemplate.queryForObject(sqlQuery, (rs, rn) -> rs.getBoolean("RATING"), idOfMpa);
     }
 
     @Override
@@ -85,5 +74,4 @@ public class MpaDbStorage implements MpaStorage {
         String ratingName = rs.getString("RATING_NAME");
         return new Mpa(ratingId, ratingName);
     }
-
 }
