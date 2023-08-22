@@ -28,7 +28,7 @@ public class MpaDbStorage implements MpaStorage {
 
 
     @Override
-    public Collection<Mpa> findAll() {
+    public List<Mpa> findAll() {
         String sqlQuery = "SELECT\n" +
                 "m.RATING_ID AS RATING_ID,\n" +
                 "m.NAME AS RATING_NAME\n" +
@@ -69,7 +69,7 @@ public class MpaDbStorage implements MpaStorage {
         return jdbcTemplate.queryForObject(sqlQuery, this::makeMpa, id);
     }
 
-    private Collection<Mpa> makeMpaList(ResultSet rs) throws SQLException {
+    private List<Mpa> makeMpaList(ResultSet rs) throws SQLException {
         List<Mpa> mpaList = new ArrayList<>();
 
         while (rs.next()) {

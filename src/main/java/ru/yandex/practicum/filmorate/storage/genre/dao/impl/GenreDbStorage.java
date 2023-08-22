@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.storage.genre.dao.GenreStorage;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 
@@ -30,7 +29,7 @@ public class GenreDbStorage implements GenreStorage {
 
 
     @Override
-    public Collection<Genre> findAll() {
+    public List<Genre> findAll() {
         String sqlQuery = "SELECT\n" +
                 "g.GENRE_ID,\n" +
                 "g.NAME\n" +
@@ -70,7 +69,7 @@ public class GenreDbStorage implements GenreStorage {
         return jdbcTemplate.queryForObject(sqlQuery, this::makeGenre, id);
     }
 
-    private Collection<Genre> makeGenreList(ResultSet rs) throws SQLException {
+    private List<Genre> makeGenreList(ResultSet rs) throws SQLException {
         List<Genre> genreList = new ArrayList<>();
 
         while (rs.next()) {

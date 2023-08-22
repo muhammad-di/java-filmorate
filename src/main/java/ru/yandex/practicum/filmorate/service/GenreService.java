@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.exeption.GenreDoesNotExistException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.genre.dao.GenreStorage;
 
-import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -19,7 +19,7 @@ public class GenreService {
         this.storage = storage;
     }
 
-    public Collection<Genre> findAll() {
+    public List<Genre> findAll() {
         return storage.findAll();
     }
 
