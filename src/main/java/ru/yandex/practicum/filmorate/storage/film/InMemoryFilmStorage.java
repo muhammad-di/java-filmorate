@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.film.dao.FilmStorage;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
 
-    private final Map<Integer, Film> films = new ConcurrentHashMap<>();
+    private final Map<Long, Film> films = new ConcurrentHashMap<>();
 
     public Collection<Film> findAll() {
         return new ArrayList<>(films.values());
@@ -30,13 +31,13 @@ public class InMemoryFilmStorage implements FilmStorage {
         return films.get(film.getId());
     }
 
-    public void addLike(int idOfFilm, int idOfUser) {
+    public void addLike(Long idOfFilm, Long idOfUser) {
         Film film = films.get(idOfFilm);
 
         film.addLike(idOfUser);
     }
 
-    public void deleteLike(int idOfFilm, int idOfUser) {
+    public void deleteLike(Long idOfFilm, Long idOfUser) {
         Film film = films.get(idOfFilm);
 
         film.deleteLike(idOfUser);
@@ -56,11 +57,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         return list.subList(list.size() - count, list.size());
     }
 
-    public boolean containsFilm(int idOfFilm) {
+    public boolean containsFilm(Long idOfFilm) {
         return films.containsKey(idOfFilm);
     }
 
-    public Film getFilmById(Integer id) {
+    public Film getFilmById(Long id) {
         return films.getOrDefault(id, null);
     }
 }

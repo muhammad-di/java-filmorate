@@ -34,12 +34,12 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> getAllFriends(@PathVariable Integer id) {
+    public Collection<User> getAllFriends(@PathVariable Long id) {
         return userService.getAllFriends(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+    public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
         if (id < MIN_ID || friendId < MIN_ID) {
             String msg = String.format("Path \"/%d/friends/%d\" does not exist", id, friendId);
             throw new PathNotFoundException(msg);
@@ -48,7 +48,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void deleteFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+    public void deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
@@ -59,7 +59,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> getCommonFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
+    public Collection<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
@@ -70,7 +70,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Integer id) {
+    public User getUserById(@PathVariable Long id) throws UserDoesNotExistException {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
