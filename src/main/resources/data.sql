@@ -13,23 +13,36 @@
 --'Description of a Dune movie', 3
 --);
 --
-INSERT INTO mpa (NAME) VALUES ('G');
-INSERT INTO mpa (NAME) VALUES ('PG');
-INSERT INTO mpa (NAME) VALUES ('PG-13');
-INSERT INTO mpa (NAME) VALUES ('R');
-INSERT INTO mpa (NAME) VALUES ('NC-17');
+MERGE INTO mpa KEY (RATING_ID) VALUES (1, 'G');
+MERGE INTO mpa KEY (RATING_ID) VALUES (2, 'PG');
+MERGE INTO mpa KEY (RATING_ID) VALUES (3, 'PG-13');
+MERGE INTO mpa KEY (RATING_ID) VALUES (4, 'R');
+MERGE INTO mpa KEY (RATING_ID) VALUES (5, 'NC-17');
+
+--INSERT INTO mpa (NAME) VALUES ('G');
+--INSERT INTO mpa (NAME) VALUES ('PG');
+--INSERT INTO mpa (NAME) VALUES ('PG-13');
+--INSERT INTO mpa (NAME) VALUES ('R');
+--INSERT INTO mpa (NAME) VALUES ('NC-17');
 --
 --INSERT INTO film_rating (FILM_ID, RATING_ID) VALUES (1,4);
 --INSERT INTO film_rating (FILM_ID, RATING_ID) VALUES (2,2);
 --INSERT INTO film_rating (FILM_ID, RATING_ID) VALUES (3,3);
 
+MERGE INTO genre KEY (GENRE_ID) VALUES (1, 'Комедия');
+MERGE INTO genre KEY (GENRE_ID) VALUES (2, 'Драма');
+MERGE INTO genre KEY (GENRE_ID) VALUES (3, 'Мультфильм');
+MERGE INTO genre KEY (GENRE_ID) VALUES (4, 'Триллер');
+MERGE INTO genre KEY (GENRE_ID) VALUES (5, 'Документальный');
+MERGE INTO genre KEY (GENRE_ID) VALUES (6, 'Боевик');
 
-INSERT INTO genre (NAME) VALUES ('Комедия');
-INSERT INTO genre (NAME) VALUES ('Драма');
-INSERT INTO genre (NAME) VALUES ('Мультфильм');
-INSERT INTO genre (NAME) VALUES ('Триллер');
-INSERT INTO genre (NAME) VALUES ('Документальный');
-INSERT INTO genre (NAME) VALUES ('Боевик');
+
+--INSERT INTO genre (NAME) VALUES ('Комедия');
+--INSERT INTO genre (NAME) VALUES ('Драма');
+--INSERT INTO genre (NAME) VALUES ('Мультфильм');
+--INSERT INTO genre (NAME) VALUES ('Триллер');
+--INSERT INTO genre (NAME) VALUES ('Документальный');
+--INSERT INTO genre (NAME) VALUES ('Боевик');
 --INSERT INTO genre (NAME) VALUES ('KIDS');
 --INSERT INTO genre (NAME) VALUES ('MUSIC');
 --INSERT INTO genre (NAME) VALUES ('MYSTERY');
