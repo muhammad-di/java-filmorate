@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.film;
+package ru.yandex.practicum.filmorate.storage.film.dao;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -12,13 +12,13 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    void addLike(int idOfFilm, int idOfUser);
+    void addLike(Long idOfFilm, Long idOfUser);
 
-    void deleteLike(int id, int idOfFriend);
+    void deleteLike(Long id, Long idOfFriend);
 
     Collection<Film> getMostPopularFilms(Integer count);
 
-    boolean containsFilm(int idOfFilm);
+    boolean containsFilm(Long idOfFilm);
 
-    Film getFilmById(Integer id);
+    Film getFilmById(Long id);
 }

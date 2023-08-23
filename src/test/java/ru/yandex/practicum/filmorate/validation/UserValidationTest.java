@@ -19,7 +19,7 @@ public class UserValidationTest {
     @Test
     public void shouldReturnTrueForEmailEmpty() {
         User user = User.builder()
-                .id(1)
+                .id(1L)
                 .email("")
                 .login("alexsLogin")
                 .name("Alex")
@@ -33,7 +33,7 @@ public class UserValidationTest {
     @Test
     public void shouldReturnTrueForEmailBlank() {
         User user = User.builder()
-                .id(1)
+                .id(1L)
                 .email("  ")
                 .login("alexsLogin")
                 .name("Alex")
@@ -47,7 +47,7 @@ public class UserValidationTest {
     @Test
     public void shouldReturnFalseForEmailFiledIn() {
         User user = User.builder()
-                .id(1)
+                .id(1L)
                 .email("alex@example.uk")
                 .login("alexsLogin")
                 .name("Alex")
@@ -61,7 +61,7 @@ public class UserValidationTest {
     @Test
     public void shouldReturnTrueForEmailNotContainingAtChar() {
         User user = User.builder()
-                .id(1)
+                .id(1L)
                 .email("alexExample.uk")
                 .login("alexsLogin")
                 .name("Alex")
@@ -75,7 +75,7 @@ public class UserValidationTest {
     @Test
     public void shouldReturnTrueForLoginEmpty() {
         User user = User.builder()
-                .id(1)
+                .id(1L)
                 .email("alex@example.uk")
                 .login("").name("Alex")
                 .birthday(LocalDate.of(2002, 4, 29))
@@ -88,7 +88,7 @@ public class UserValidationTest {
     @Test
     public void shouldReturnTrueForLoginBlank() {
         User user = User.builder()
-                .id(1)
+                .id(1L)
                 .email("alex@example.uk")
                 .login("   ")
                 .name("Alex")
@@ -102,7 +102,7 @@ public class UserValidationTest {
     @Test
     public void shouldReturnTrueForLoginContainingSpaceChar() {
         User user = User.builder()
-                .id(1)
+                .id(1L)
                 .email("alex@example.uk")
                 .login("  alexLogin")
                 .name("Alex")
@@ -116,7 +116,7 @@ public class UserValidationTest {
     @Test
     public void shouldReturnTrueForBirthdayIsAfterNowDayOn1day() {
         User user = User.builder()
-                .id(1)
+                .id(1L)
                 .email("alex@example.uk")
                 .login("alexLogin")
                 .name("Alex")
@@ -130,7 +130,7 @@ public class UserValidationTest {
     @Test
     public void shouldReturnFalseForBirthdayIsNow() {
         User user = User.builder()
-                .id(1)
+                .id(1L)
                 .email("alex@example.uk")
                 .login("alexLogin")
                 .name("Alex")
@@ -144,7 +144,7 @@ public class UserValidationTest {
     @Test
     public void shouldReturnFalseForBirthdayIsBeforeNowDate() {
         User user = User.builder()
-                .id(1)
+                .id(1L)
                 .email("alex@example.uk")
                 .login("alexLogin")
                 .name("Alex")

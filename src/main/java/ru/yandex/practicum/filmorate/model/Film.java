@@ -5,6 +5,8 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Data
@@ -13,12 +15,14 @@ public class Film {
     private final String name;
     private final LocalDate releaseDate;
     private final long duration;
-    private Set<Integer> likes;
-    private int id;
+    private Set<Long> likes;
+    private long id;
     private String description;
-    private Integer rate;
+    private List<Genre> genres;
+    private Mpa mpa;
+    private int rate;
 
-    public void addLike(int idOfUser) {
+    public void addLike(long idOfUser) {
         if (likes == null) {
             likes = new HashSet<>(Set.of(idOfUser));
         } else {
@@ -26,7 +30,20 @@ public class Film {
         }
     }
 
-    public void deleteLike(int idOfUser) {
+    public void deleteLike(long idOfUser) {
         likes.remove(idOfUser);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Film film = (Film) o;
+        return id == film.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

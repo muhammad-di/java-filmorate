@@ -19,7 +19,6 @@ public class FilmController {
     private static final String DEFAULT_MOST_FAVORITE_FILMS_COUNT = "10";
     private final FilmService filmService;
 
-
     @GetMapping
     public Collection<Film> findAll() {
         return filmService.findAll();
@@ -36,7 +35,7 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable Integer id, @PathVariable Integer userId) {
+    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
         if (id < MIN_ID || userId < MIN_ID) {
             String msg = String.format("Path \"/%d/like/%d\" does not exist", id, userId);
             throw new PathNotFoundException(msg);
@@ -45,7 +44,7 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteFriend(@PathVariable Integer id, @PathVariable Integer userId) {
+    public void deleteFriend(@PathVariable Long id, @PathVariable Long userId) {
         if (id < MIN_ID || userId < MIN_ID) {
             String msg = String.format("Path \"/%d/like/%d\" does not exist", id, userId);
             throw new PathNotFoundException(msg);
@@ -61,7 +60,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable Integer id) {
+    public Film getFilmById(@PathVariable Long id) throws FilmDoesNotExistException {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }

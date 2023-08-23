@@ -5,10 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.filmorate.exeption.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exeption.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.exeption.PathNotFoundException;
-import ru.yandex.practicum.filmorate.exeption.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exeption.*;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
 
@@ -25,17 +22,33 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handlePostNotFoundException(final FilmNotFoundException e) {
+    public ErrorResponse handlePostNotFoundException(final FilmDoesNotExistException e) {
         return new ErrorResponse(
-                e.getMessage()
+                e.getErrorMessage()
         );
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleUserNotFoundException(final UserNotFoundException e) {
+    public ErrorResponse handleUserNotFoundException(final UserDoesNotExistException e) {
         return new ErrorResponse(
-                e.getMessage()
+                e.getErrorMessage()
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleMpaNotFoundException(final MpaDoesNotExistException e) {
+        return new ErrorResponse(
+                e.getErrorMessage()
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleGenreNotFoundException(final GenreDoesNotExistException e) {
+        return new ErrorResponse(
+                e.getErrorMessage()
         );
     }
 
