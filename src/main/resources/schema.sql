@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS film
     release_date DATE NOT NULL,
     duration     INTEGER NOT NULL,
     description  VARCHAR(500) NOT NULL,
-    mpa          INTEGER NOT NULL
+    mpa          INTEGER REFERENCES mpa (rating_id)
 );
 
 CREATE TABLE IF NOT EXISTS mpa
