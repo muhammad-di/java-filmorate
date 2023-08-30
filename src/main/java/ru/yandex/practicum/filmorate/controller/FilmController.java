@@ -31,7 +31,8 @@ public class FilmController {
 
     @PutMapping
     public Film update(@RequestBody Film film) throws FilmDoesNotExistException, InvalidFilmPropertiesException {
-        return filmService.update(film);
+        log.info(String.valueOf(film));
+            return filmService.update(film);
     }
 
     @PutMapping("/{id}/like/{userId}")
