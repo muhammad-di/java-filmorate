@@ -17,12 +17,10 @@ public class RecommendationsService {
     private final FilmStorage filmStorage;
 
     public Set<Film> getRecommendedFilms(Long userId) {
-        List<User> users = (List<User>) userStorage.findAll();
-        Map<Long, Set<Long>> allUsersWithTheirLikedFilm = new HashMap<>();
-
-        for (User curUser : users) {
-            allUsersWithTheirLikedFilm.put(curUser.getId(), filmStorage.getIdLikedFilmsByUser(curUser.getId()));
-        }
+        Map<Long, Set<Long>> allUsersWithTheirLikedFilm = userStorage.findAll()
+                .stream()
+                .collect(Collectors.toMap(User::getId,
+                        user -> filmStorage.getIdLikedFilmsByUser(user.getId())));
 
         List<Long> idUsersBySimilarLikes = new ArrayList<>();
         long maxCount = 0;

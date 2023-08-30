@@ -205,6 +205,7 @@ public class FilmDbStorage implements FilmStorage {
         String sqlQuery = "SELECT film_id " +
                 "FROM likes " +
                 "WHERE user_id = ?";
+
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
         Set<Long> likes = new HashSet<>();
         while (sqlRowSet.next()) {
