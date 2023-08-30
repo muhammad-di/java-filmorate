@@ -64,4 +64,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film getFilmById(Long id) {
         return films.getOrDefault(id, null);
     }
+
+    @Override
+    public Set<Long> getIdLikedFilmsByUser(Long id) {
+        return null;
+    }
 }

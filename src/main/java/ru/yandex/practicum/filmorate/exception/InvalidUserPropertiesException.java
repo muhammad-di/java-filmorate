@@ -1,24 +1,23 @@
-package ru.yandex.practicum.filmorate.exeption;
+package ru.yandex.practicum.filmorate.exception;
 
-
-public class MpaDoesNotExistException extends Exception {
+public class InvalidUserPropertiesException extends Exception {
 
     private int errorCode;
     private String errorMessage;
 
-    public MpaDoesNotExistException(Throwable throwable) {
+    public InvalidUserPropertiesException(Throwable throwable) {
         super(throwable);
     }
 
-    public MpaDoesNotExistException(String msg, Throwable throwable) {
+    public InvalidUserPropertiesException(String msg, Throwable throwable) {
         super(msg, throwable);
     }
 
-    public MpaDoesNotExistException(String msg) {
+    public InvalidUserPropertiesException(String msg) {
         super(msg);
     }
 
-    public MpaDoesNotExistException(String message, int errorCode) {
+    public InvalidUserPropertiesException(String message, int errorCode) {
         super();
         this.errorCode = errorCode;
         this.errorMessage = message;

@@ -200,6 +200,20 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.queryForObject(sqlQuery, this::makeFilm, id);
     }
 
+    @Override
+    public Set<Long> getIdLikedFilmsByUser(Long id) {
+        String sqlQuery = "SELECT film_id " +
+                "FROM likes " +
+                "WHERE user_id = ?";
+
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
+        Set<Long> likes = new HashSet<>();
+        while (sqlRowSet.next()) {
+            likes.add(sqlRowSet.getLong("film_id"));
+        }
+        return likes;
+    }
+
     // helpers methods for a CREATE method------------------------------------------------------------------------------
 
     private List<Film> makeFilmList(ResultSet rs) throws SQLException, DataAccessException {
