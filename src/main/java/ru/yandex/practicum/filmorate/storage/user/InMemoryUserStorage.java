@@ -75,4 +75,10 @@ public class InMemoryUserStorage implements UserStorage {
     public User getUserById(Long id) {
         return users.getOrDefault(id, null);
     }
+
+    @Override
+    public void deleteUserById(Long id) {
+        users.remove(id);
+        log.info("User entity with id {} was deleted", id);
+    }
 }

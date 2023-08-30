@@ -165,6 +165,15 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.queryForObject(sqlQuery, this::makeUser, id);
     }
 
+    public void deleteUserById(Long id) {
+        String sqlQuery = "DELETE FROM users " +
+                "WHERE " +
+                "USER_ID = ?";
+
+        jdbcTemplate.update(sqlQuery, id);
+        log.info("Пользователь с идентификатором {} удален.", id);
+    }
+
     // helpers methods for a CREATE method------------------------------------------------------------------------------
 
     private List<User> makeUserList(ResultSet rs) throws SQLException, DataAccessException {
@@ -212,7 +221,6 @@ public class UserDbStorage implements UserStorage {
             return mapOfFriends;
         }, id);
     }
-
 
     private void setFriends(User user) {
         String sqlQuery = "INSERT INTO users (USER_ID, FRIEND_ID, STATUS) " +

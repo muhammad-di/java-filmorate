@@ -21,4 +21,6 @@ public interface FilmStorage {
     boolean containsFilm(Long idOfFilm);
 
     Film getFilmById(Long id);
+
+    void deleteFilmById(Long id);
 }

@@ -64,4 +64,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film getFilmById(Long id) {
         return films.getOrDefault(id, null);
     }
+
+    @Override
+    public void deleteFilmById(Long id) {
+        films.remove(id);
+        log.info("Film entity with id {} was deleted", id);
+    }
 }
