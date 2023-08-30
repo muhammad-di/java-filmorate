@@ -22,5 +22,6 @@ public interface FilmStorage {
     boolean containsFilm(Long idOfFilm);
 
     Film getFilmById(Long id);
+
     Set<Long> getIdLikedFilmsByUser(Long id);
 }
