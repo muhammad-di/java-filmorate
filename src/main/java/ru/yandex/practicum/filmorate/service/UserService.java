@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import ru.yandex.practicum.filmorate.exeption.*;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.dao.UserStorage;
 import ru.yandex.practicum.filmorate.validation.UserValidation;
@@ -23,7 +23,6 @@ public class UserService {
 
     public Collection<User> findAll() {
         return storage.findAll();
-
     }
 
     public User create(User user) throws InvalidUserPropertiesException, UserAlreadyExistException {

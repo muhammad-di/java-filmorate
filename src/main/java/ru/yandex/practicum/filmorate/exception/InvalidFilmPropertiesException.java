@@ -1,23 +1,23 @@
-package ru.yandex.practicum.filmorate.exeption;
+package ru.yandex.practicum.filmorate.exception;
 
-public class InvalidUserPropertiesException extends Exception {
+public class InvalidFilmPropertiesException extends Exception {
 
     private int errorCode;
     private String errorMessage;
 
-    public InvalidUserPropertiesException(Throwable throwable) {
+    public InvalidFilmPropertiesException(Throwable throwable) {
         super(throwable);
     }
 
-    public InvalidUserPropertiesException(String msg, Throwable throwable) {
+    public InvalidFilmPropertiesException(String msg, Throwable throwable) {
         super(msg, throwable);
     }
 
-    public InvalidUserPropertiesException(String msg) {
+    public InvalidFilmPropertiesException(String msg) {
         super(msg);
     }
 
-    public InvalidUserPropertiesException(String message, int errorCode) {
+    public InvalidFilmPropertiesException(String message, int errorCode) {
         super();
         this.errorCode = errorCode;
         this.errorMessage = message;
