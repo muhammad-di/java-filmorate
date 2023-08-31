@@ -24,4 +24,6 @@ public interface FilmStorage {
     Film getFilmById(Long id);
 
     Set<Long> getIdLikedFilmsByUser(Long id);
+
+    void deleteFilmById(Long id);
 }

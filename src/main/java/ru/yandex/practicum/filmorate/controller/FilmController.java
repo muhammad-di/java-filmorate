@@ -25,17 +25,20 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) throws InvalidFilmPropertiesException, FilmAlreadyExistException {
+    public Film create(@RequestBody Film film)
+            throws InvalidFilmPropertiesException, FilmAlreadyExistException {
         return filmService.create(film);
     }
 
     @PutMapping
-    public Film update(@RequestBody Film film) throws FilmDoesNotExistException, InvalidFilmPropertiesException {
+    public Film update(@RequestBody Film film)
+            throws FilmDoesNotExistException, InvalidFilmPropertiesException {
         return filmService.update(film);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
+    public void addLike(@PathVariable Long id, @PathVariable Long userId)
+            throws FilmDoesNotExistException, UserDoesNotExistException {
         if (id < MIN_ID || userId < MIN_ID) {
             String msg = String.format("Path \"/%d/like/%d\" does not exist", id, userId);
             throw new PathNotFoundException(msg);
@@ -44,7 +47,8 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteFriend(@PathVariable Long id, @PathVariable Long userId) {
+    public void deleteFriend(@PathVariable Long id, @PathVariable Long userId)
+            throws FilmDoesNotExistException, UserDoesNotExistException {
         if (id < MIN_ID || userId < MIN_ID) {
             String msg = String.format("Path \"/%d/like/%d\" does not exist", id, userId);
             throw new PathNotFoundException(msg);
@@ -65,5 +69,13 @@ public class FilmController {
             throw new IncorrectParameterException("id");
         }
         return filmService.getFilmById(id);
+    }
+
+    @DeleteMapping("/{filmId}")
+    public void deleteFilmById(@PathVariable Long filmId) throws FilmDoesNotExistException {
+        if (filmId < MIN_ID) {
+            throw new IncorrectParameterException("id");
+        }
+        filmService.deleteFilmById(filmId);
     }
 }

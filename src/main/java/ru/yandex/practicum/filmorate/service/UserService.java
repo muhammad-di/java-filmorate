@@ -25,7 +25,8 @@ public class UserService {
         return storage.findAll();
     }
 
-    public User create(User user) throws InvalidUserPropertiesException, UserAlreadyExistException {
+    public User create(User user)
+            throws InvalidUserPropertiesException, UserAlreadyExistException {
         if (UserValidation.validate(user)) {
             log.info("User validation error");
             throw new InvalidUserPropertiesException("Invalid properties for a user", 406);
@@ -40,9 +41,11 @@ public class UserService {
         return storage.create(user);
     }
 
-    public User update(User user) throws UserDoesNotExistException, InvalidUserPropertiesException {
+    public User update(User user)
+            throws UserDoesNotExistException, InvalidUserPropertiesException {
         if (!storage.containsUser(user.getId())) {
-            throw new UserDoesNotExistException("User with such id {" + user.getId() + "} does not exist", 404);
+            throw new UserDoesNotExistException("User " +
+                    "with such id {" + user.getId() + "} does not exist", 404);
         }
         if (UserValidation.validate(user)) {
             log.info("User validation error");
@@ -54,26 +57,64 @@ public class UserService {
         return storage.update(user);
     }
 
-    public Collection<User> getAllFriends(Long id) {
+    public Collection<User> getAllFriends(Long id) throws UserDoesNotExistException {
+        if (!storage.containsUser(id)) {
+            throw new UserDoesNotExistException("User " +
+                    "with such id {" + id + "} does not exist", 404);
+        }
         return storage.getAllFriends(id);
     }
 
-    public void addFriend(Long id, Long idOfFriend) {
+    public void addFriend(Long id, Long idOfFriend) throws UserDoesNotExistException {
+        if (!storage.containsUser(id)) {
+            throw new UserDoesNotExistException("User " +
+                    "with such id {" + id + "} does not exist", 404);
+        }
+        if (!storage.containsUser(idOfFriend)) {
+            throw new UserDoesNotExistException("User " +
+                    "with such id {" + id + "} does not exist", 404);
+        }
         storage.addFriend(id, idOfFriend);
     }
 
-    public void deleteFriend(Long id, Long idOfFriend) {
+    public void deleteFriend(Long id, Long idOfFriend) throws UserDoesNotExistException {
+        if (!storage.containsUser(id)) {
+            throw new UserDoesNotExistException("User " +
+                    "with such id {" + id + "} does not exist", 404);
+        }
+        if (!storage.containsUser(idOfFriend)) {
+            throw new UserDoesNotExistException("User " +
+                    "with such id {" + id + "} does not exist", 404);
+        }
         storage.deleteFriend(id, idOfFriend);
     }
 
-    public Collection<User> getCommonFriends(Long id, Long idOfFriend) {
+    public Collection<User> getCommonFriends(Long id, Long idOfFriend)
+            throws UserDoesNotExistException {
+        if (!storage.containsUser(id)) {
+            throw new UserDoesNotExistException("User " +
+                    "with such id {" + id + "} does not exist", 404);
+        }
+        if (!storage.containsUser(idOfFriend)) {
+            throw new UserDoesNotExistException("User " +
+                    "with such id {" + id + "} does not exist", 404);
+        }
         return storage.getCommonFriends(id, idOfFriend);
     }
 
     public User getUserById(Long id) throws UserDoesNotExistException {
         if (!storage.containsUser(id)) {
-            throw new UserDoesNotExistException("User with such id {" + id + "} does not exist", 404);
+            throw new UserDoesNotExistException("User " +
+                    "with such id {" + id + "} does not exist", 404);
         }
         return storage.getUserById(id);
+    }
+
+    public void deleteUserById(Long id) throws UserDoesNotExistException {
+        if (!storage.containsUser(id)) {
+            throw new UserDoesNotExistException("User " +
+                    "with such id {" + id + "} does not exist", 404);
+        }
+        storage.deleteUserById(id);
     }
 }

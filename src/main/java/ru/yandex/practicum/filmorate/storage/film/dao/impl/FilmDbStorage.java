@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 @Repository
 @Primary
 public class FilmDbStorage implements FilmStorage {
-
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -142,27 +141,29 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getMostPopularFilms(Integer count) {
-        String sqlQuery = "SELECT\n" +
-                "COUNT(f.FILM_ID) AS LIKES_COUNT,\n" +
-                "f.FILM_ID,\n" +
-                "f.NAME,\n" +
-                "f.RELEASE_DATE,\n" +
-                "f.DURATION,\n" +
-                "f.DESCRIPTION,\n" +
-                "f.MPA AS RATING_ID,\n" +
-                "m.NAME AS RATING_NAME\n" +
-                "FROM film AS f\n" +
-                "INNER JOIN likes l ON l.FILM_ID = f.FILM_ID \n" +
-                "INNER JOIN MPA m ON f.MPA = m.RATING_ID\n" +
-                "GROUP BY f.FILM_ID\n" +
-                "ORDER BY LIKES_COUNT DESC\n" +
-                "LIMIT ?";
+        String sqlQuery = "SELECT t.film_id, " +
+                "t.name, " +
+                "t.description, " +
+                "t.release_date, " +
+                "t.duration, " +
+                "t.RATING_ID," +
+                "t.RATING_NAME " +
+                "FROM " +
+                "(SELECT f.film_id, " +
+                "f.name, " +
+                "f.description, " +
+                "f.release_date, " +
+                "f.duration, " +
+                "f.mpa AS RATING_ID, " +
+                "m.NAME AS RATING_NAME " +
+                "FROM film AS f " +
+                "JOIN MPA m ON f.MPA = m.RATING_ID) AS t " +
+                "LEFT JOIN likes AS l ON t.film_id = l.film_id " +
+                "GROUP BY t.film_id " +
+                "ORDER BY COUNT(l.user_id) DESC " +
+                "LIMIT ?;";
 
-        Collection<Film> filmsList = jdbcTemplate.query(sqlQuery, this::makeFilmList, count);
-        if (filmsList.isEmpty()) {
-            return findAll();
-        }
-        return filmsList;
+        return jdbcTemplate.query(sqlQuery, this::makeFilmList, count);
     }
 
     @Override
@@ -212,6 +213,16 @@ public class FilmDbStorage implements FilmStorage {
             likes.add(sqlRowSet.getLong("film_id"));
         }
         return likes;
+    }
+
+    @Override
+    public void deleteFilmById(Long id) {
+        String sqlQuery = "DELETE FROM film " +
+                "WHERE " +
+                "FILM_ID = ?";
+
+        jdbcTemplate.update(sqlQuery, id);
+        log.info("Фильм с идентификатором {} удален.", id);
     }
 
     // helpers methods for a CREATE method------------------------------------------------------------------------------
