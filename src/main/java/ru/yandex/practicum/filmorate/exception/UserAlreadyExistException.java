@@ -1,24 +1,23 @@
-package ru.yandex.practicum.filmorate.exeption;
+package ru.yandex.practicum.filmorate.exception;
 
-
-public class FilmAlreadyExistException extends Exception {
+public class UserAlreadyExistException extends Exception {
 
     private int errorCode;
     private String errorMessage;
 
-    public FilmAlreadyExistException(Throwable throwable) {
+    public UserAlreadyExistException(Throwable throwable) {
         super(throwable);
     }
 
-    public FilmAlreadyExistException(String msg, Throwable throwable) {
+    public UserAlreadyExistException(String msg, Throwable throwable) {
         super(msg, throwable);
     }
 
-    public FilmAlreadyExistException(String msg) {
+    public UserAlreadyExistException(String msg) {
         super(msg);
     }
 
-    public FilmAlreadyExistException(String message, int errorCode) {
+    public UserAlreadyExistException(String message, int errorCode) {
         super();
         this.errorCode = errorCode;
         this.errorMessage = message;

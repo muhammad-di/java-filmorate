@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import ru.yandex.practicum.filmorate.exeption.*;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.dao.UserStorage;
 import ru.yandex.practicum.filmorate.validation.UserValidation;
@@ -89,7 +89,8 @@ public class UserService {
         storage.deleteFriend(id, idOfFriend);
     }
 
-    public Collection<User> getCommonFriends(Long id, Long idOfFriend) throws UserDoesNotExistException {
+    public Collection<User> getCommonFriends(Long id, Long idOfFriend)
+            throws UserDoesNotExistException {
         if (!storage.containsUser(id)) {
             throw new UserDoesNotExistException("User " +
                     "with such id {" + id + "} does not exist", 404);

@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 @Repository
 @Primary
 public class FilmDbStorage implements FilmStorage {
-
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
@@ -200,6 +199,19 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE f.FILM_ID = ?";
 
         return jdbcTemplate.queryForObject(sqlQuery, this::makeFilm, id);
+    }
+
+    public Set<Long> getIdLikedFilmsByUser(Long id) {
+        String sqlQuery = "SELECT film_id " +
+                "FROM likes " +
+                "WHERE user_id = ?";
+
+        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
+        Set<Long> likes = new HashSet<>();
+        while (sqlRowSet.next()) {
+            likes.add(sqlRowSet.getLong("film_id"));
+        }
+        return likes;
     }
 
     @Override

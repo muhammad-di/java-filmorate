@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 
 import java.util.Collection;
+import java.util.Set;
 
 public interface FilmStorage {
     Collection<Film> findAll();
@@ -21,6 +22,8 @@ public interface FilmStorage {
     boolean containsFilm(Long idOfFilm);
 
     Film getFilmById(Long id);
+
+    Set<Long> getIdLikedFilmsByUser(Long id);
 
     void deleteFilmById(Long id);
 }
