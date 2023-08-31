@@ -29,8 +29,7 @@ public class RecommendationsService {
             if (Objects.equals(curUserId, userId)) continue;
 
             long count = allUsersWithTheirLikedFilm.get(curUserId).stream()
-                    .filter(filmId -> allUsersWithTheirLikedFilm.get(userId)
-                            .contains(filmId)).count();
+                    .filter(filmId -> allUsersWithTheirLikedFilm.get(userId).contains(filmId)).count();
 
             if (count > 0 && count == maxCount) {
                 idUsersBySimilarLikes.add(curUserId);
