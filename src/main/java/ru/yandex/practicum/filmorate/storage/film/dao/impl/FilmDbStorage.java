@@ -142,7 +142,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
         String sqlQuery = "SELECT t.film_id,\n" +
-                "t.name, \n" +
+                "t.name,\n" +
                 "t.description,\n" +
                 "t.release_date, \n" +
                 "t.duration, \n" +
