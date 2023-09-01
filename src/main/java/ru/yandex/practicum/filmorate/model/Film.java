@@ -4,10 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @Builder
@@ -19,6 +16,7 @@ public class Film {
     private long id;
     private String description;
     private List<Genre> genres;
+    private List<Director> directors;
     private Mpa mpa;
     private int rate;
 
