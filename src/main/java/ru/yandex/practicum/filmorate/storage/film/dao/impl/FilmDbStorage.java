@@ -251,7 +251,7 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getFilmBySearchByTitleOrDirector(String title, boolean isDirectorCheck, boolean isTitleCheck) {
         List<String> params = new ArrayList<>();
         title = "%".concat(title).concat("%");
-        String qs = "select distinct f.film_id, f.name, f.release_date, f.duration, description, mpa.RATING_ID as RATING_ID, mpa.NAME as RATING_NAME from FILM as f join MPA on mpa.RATING_ID = f.MPA";
+        String qs = "select distinct count(l.ID)  as likes, f.film_id, f.name, f.release_date, f.duration, description, mpa.RATING_ID as RATING_ID, mpa.NAME as RATING_NAME from FILM as f join MPA on mpa.RATING_ID = f.MPA left join LIKES l on f.FILM_ID = l.FILM_ID";
         if (isDirectorCheck) {
             qs = qs.concat(" join FILM_DIRECTOR as fd on f.FILM_ID = fd.FILM_ID join DIRECTOR as d on d.DIRECTOR_ID = fd.DIRECTOR_ID where LOWER(d.NAME) like LOWER(?)");
             params.add(title);
@@ -261,10 +261,10 @@ public class FilmDbStorage implements FilmStorage {
             if (!isDirectorCheck) {
                 qs =qs.concat(" where LOWER(f.NAME) like LOWER(?)");
             } else {
-                qs = qs.concat(" and LOWER(f.NAME) like LOWER(?)");
+                qs = qs.concat(" or LOWER(f.NAME) like LOWER(?)");
             }
         }
-        qs = qs.concat(";");
+        qs = qs.concat(" group by f.FILM_ID order by count(l.ID) desc;");
 
         try {
             log.info("qs = " + qs);
