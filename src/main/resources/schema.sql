@@ -1,3 +1,4 @@
+
 --deleting all tables before each start
 
 DROP TABLE IF EXISTS mpa CASCADE;
