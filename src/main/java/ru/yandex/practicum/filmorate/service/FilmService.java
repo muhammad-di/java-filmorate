@@ -28,7 +28,7 @@ public class FilmService {
         return storage.findAll();
     }
 
-    public List<Film> getFilmBySearchByTitleOrDirector(String title, String by) {
+    public List<Film> getFilmBySearchByTitleOrDirector(String title, String by) throws IncorrectParameterException {
         boolean isDirectorCheck = false;
         boolean isTitleCheck = false;
         for (String value : by.split(",")) {

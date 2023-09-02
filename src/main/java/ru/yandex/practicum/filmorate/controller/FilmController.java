@@ -66,13 +66,10 @@ public class FilmController {
     }
 
     @GetMapping("/search")
-    public List<Film> getFilmsBySearch(
+    public List<Film> getFilmsBySearch (
             @RequestParam() String query,
             @RequestParam() String by
-    ) {
-        if (query == null || by == null) {
-            throw new IncorrectParameterException("Должны быть заполнены параметры query и by");
-        }
+    ) throws IncorrectParameterException {
         return filmService.getFilmBySearchByTitleOrDirector(query, by);
     }
 
