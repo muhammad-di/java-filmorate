@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.storage.user.dao.UserStorage;
 import ru.yandex.practicum.filmorate.validation.FilmValidation;
 
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -78,6 +79,10 @@ public class FilmService {
 
     public Collection<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
         return storage.getMostPopularFilms(count, genreId, year);
+    }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return storage.getCommonFilms(userId, friendId);
     }
 
     public Film getFilmById(Long id) throws FilmDoesNotExistException {
