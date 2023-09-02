@@ -17,7 +17,7 @@ public interface FilmStorage {
 
     void deleteLike(Long id, Long idOfFriend);
 
-    Collection<Film> getMostPopularFilms(Integer count);
+    Collection<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year);
 
     boolean containsFilm(Long idOfFilm);
 

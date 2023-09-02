@@ -76,8 +76,8 @@ public class FilmService {
         storage.deleteLike(idOfFilm, idOfUser);
     }
 
-    public Collection<Film> getMostPopularFilms(Integer count) {
-        return storage.getMostPopularFilms(count);
+    public Collection<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        return storage.getMostPopularFilms(count, genreId, year);
     }
 
     public Film getFilmById(Long id) throws FilmDoesNotExistException {
