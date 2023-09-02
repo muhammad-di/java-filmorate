@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public interface FilmStorage {
@@ -24,6 +25,8 @@ public interface FilmStorage {
     Film getFilmById(Long id);
 
     Set<Long> getIdLikedFilmsByUser(Long id);
+
+    List<Film> getFilmBySearchByTitleOrDirector(String title, boolean isDirectorCheck, boolean isTitleCheck);
 
     void deleteFilmById(Long id);
 }

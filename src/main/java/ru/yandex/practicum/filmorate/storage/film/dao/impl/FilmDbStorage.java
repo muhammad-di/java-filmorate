@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -244,6 +245,33 @@ public class FilmDbStorage implements FilmStorage {
 
         jdbcTemplate.update(sqlQuery, id);
         log.info("Фильм с идентификатором {} удален.", id);
+    }
+
+    @Override
+    public List<Film> getFilmBySearchByTitleOrDirector(String title, boolean isDirectorCheck, boolean isTitleCheck) {
+        List<String> params = new ArrayList<>();
+        title = "%".concat(title).concat("%");
+        String qs = "select distinct f.film_id, f.name, f.release_date, f.duration, description, mpa.RATING_ID as RATING_ID, mpa.NAME as RATING_NAME from FILM as f join MPA on mpa.RATING_ID = f.MPA";
+        if (isDirectorCheck) {
+            qs = qs.concat(" join FILM_DIRECTOR as fd on f.FILM_ID = fd.FILM_ID join DIRECTOR as d on d.DIRECTOR_ID = fd.DIRECTOR_ID where LOWER(d.NAME) like LOWER(?)");
+            params.add(title);
+        }
+        if (isTitleCheck) {
+            params.add(title);
+            if (!isDirectorCheck) {
+                qs =qs.concat(" where LOWER(f.NAME) like LOWER(?)");
+            } else {
+                qs = qs.concat(" and LOWER(f.NAME) like LOWER(?)");
+            }
+        }
+        qs = qs.concat(";");
+
+        try {
+            log.info("qs = " + qs);
+            return jdbcTemplate.query(qs, this::makeFilmList, params.toArray());
+        } catch (DataAccessException e) {
+            throw new FilmNotFoundException("Фильм не найден");
+        }
     }
 
     // helpers methods for a CREATE method------------------------------------------------------------------------------

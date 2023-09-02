@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.storage.user.dao.UserStorage;
 import ru.yandex.practicum.filmorate.validation.FilmValidation;
 
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -25,6 +26,23 @@ public class FilmService {
 
     public Collection<Film> findAll() {
         return storage.findAll();
+    }
+
+    public List<Film> getFilmBySearchByTitleOrDirector(String title, String by) {
+        boolean isDirectorCheck = false;
+        boolean isTitleCheck = false;
+        for (String value : by.split(",")) {
+            if (value.equals("director")) {
+                isDirectorCheck = true;
+            }
+            if (value.equals("title")) {
+                isTitleCheck = true;
+            }
+        }
+        if (!isDirectorCheck && !isTitleCheck) {
+            throw new IncorrectParameterException("Не заполнен параметр поиска by");
+        }
+        return storage.getFilmBySearchByTitleOrDirector(title, isDirectorCheck, isTitleCheck);
     }
 
     public Film create(Film film) throws InvalidFilmPropertiesException, FilmAlreadyExistException {

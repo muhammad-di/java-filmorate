@@ -74,4 +74,8 @@ public class InMemoryFilmStorage implements FilmStorage {
         films.remove(id);
         log.info("Film entity with id {} was deleted", id);
     }
+
+    public List<Film> getFilmBySearchByTitleOrDirector(String title, boolean isDirectorCheck, boolean isTitleCheck){
+        return new ArrayList<Film>();
+    }
 }
