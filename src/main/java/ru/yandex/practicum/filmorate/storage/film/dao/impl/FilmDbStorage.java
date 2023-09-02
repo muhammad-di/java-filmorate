@@ -259,7 +259,7 @@ public class FilmDbStorage implements FilmStorage {
         if (isTitleCheck) {
             params.add(title);
             if (!isDirectorCheck) {
-                qs =qs.concat(" where LOWER(f.NAME) like LOWER(?)");
+                qs = qs.concat(" where LOWER(f.NAME) like LOWER(?)");
             } else {
                 qs = qs.concat(" or LOWER(f.NAME) like LOWER(?)");
             }
