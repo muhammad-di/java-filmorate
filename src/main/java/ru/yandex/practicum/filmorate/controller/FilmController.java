@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -9,7 +10,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.*;
 
-import static ru.yandex.practicum.filmorate.Constants.MIN_ID;
+import static ru.yandex.practicum.filmorate.Constants.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -86,5 +87,18 @@ public class FilmController {
             throw new IncorrectParameterException("id");
         }
         filmService.deleteFilmById(filmId);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> getFilmsWithDirectorSorted(@PathVariable Long directorId,
+                                                       @RequestParam String sortBy)
+            throws DirectorDoesNotExistException {
+        if (directorId < MIN_ID) {
+            throw new IncorrectParameterException("directorId");
+        }
+        if (!StringUtils.hasText(sortBy)) {
+            throw new IncorrectParameterException("sortBy");
+        }
+        return filmService.getFilmsWithDirectorSorted(directorId, sortBy);
     }
 }
