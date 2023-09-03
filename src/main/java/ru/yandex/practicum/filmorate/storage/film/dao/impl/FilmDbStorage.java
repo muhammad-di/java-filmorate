@@ -10,12 +10,14 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.dao.FilmStorage;
 
 import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -111,30 +113,70 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getMostPopularFilms(Integer count) {
-        String sqlQuery = "SELECT t.film_id, " +
-                "t.name, " +
-                "t.description, " +
-                "t.release_date, " +
-                "t.duration, " +
-                "t.RATING_ID," +
-                "t.RATING_NAME " +
-                "FROM " +
-                "(SELECT f.film_id, " +
-                "f.name, " +
-                "f.description, " +
-                "f.release_date, " +
-                "f.duration, " +
-                "f.mpa AS RATING_ID, " +
-                "m.NAME AS RATING_NAME " +
-                "FROM film AS f " +
-                "JOIN MPA m ON f.MPA = m.RATING_ID) AS t " +
-                "LEFT JOIN likes AS l ON t.film_id = l.film_id " +
-                "GROUP BY t.film_id " +
-                "ORDER BY COUNT(l.user_id) DESC " +
-                "LIMIT ?;";
+    public Collection<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        String sqlQuery = "SELECT t.film_id,\n" +
+                "t.name,\n" +
+                "t.description,\n" +
+                "t.release_date, \n" +
+                "t.duration, \n" +
+                "t.RATING_ID,\n" +
+                "t.RATING_NAME \n" +
+                "FROM \n" +
+                "(SELECT f.film_id, \n" +
+                "f.name, \n" +
+                "f.description, \n" +
+                "f.release_date, \n" +
+                "f.duration, \n" +
+                "f.mpa AS RATING_ID, \n" +
+                "m.NAME AS RATING_NAME \n" +
+                "FROM film AS f \n" +
+                "JOIN MPA m ON f.MPA = m.RATING_ID) AS t \n" +
+                "LEFT JOIN likes AS l ON t.film_id = l.film_id \n" +
+                "LEFT JOIN FILM_GENRE AS fg ON t.film_id = fg.FILM_ID \n";
+        if (genreId == null && year == null) {
+            sqlQuery = sqlQuery + "GROUP BY t.film_id \n" +
+                    "ORDER BY COUNT(l.user_id) DESC \n" +
+                    "LIMIT ?;";
+            return jdbcTemplate.query(sqlQuery, this::makeFilmList, count);
+        } else if (genreId != null && year == null) {
+            sqlQuery = sqlQuery + "WHERE fg.GENRE_ID = ? \n" +
+                    "GROUP BY t.film_id \n" +
+                    "ORDER BY COUNT(l.user_id) DESC \n" +
+                    "LIMIT ?;";
+            return jdbcTemplate.query(sqlQuery, this::makeFilmList, genreId, count);
+        } else if (genreId == null && year != null) {
+            sqlQuery = sqlQuery + "WHERE EXTRACT(YEAR FROM CAST(t.release_date AS date)) = ?\n" +
+                    "GROUP BY t.film_id \n" +
+                    "ORDER BY COUNT(l.user_id) DESC \n" +
+                    "LIMIT ?;";
+            return jdbcTemplate.query(sqlQuery, this::makeFilmList, year, count);
+        } else {
+            sqlQuery = sqlQuery + "WHERE fg.GENRE_ID = ? AND \n" +
+                    "EXTRACT(YEAR FROM CAST(t.release_date AS date)) = ?\n" +
+                    "GROUP BY t.film_id \n" +
+                    "ORDER BY COUNT(l.user_id) DESC \n" +
+                    "LIMIT ?;";
+            return jdbcTemplate.query(sqlQuery, this::makeFilmList, genreId, year, count);
+        }
+    }
 
-        return jdbcTemplate.query(sqlQuery, this::makeFilmList, count);
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        final String qs = "select count(l.ID) as counter, req.film_id, name, release_date, duration, description, RATING_ID, RATING_NAME\n" +
+                "from (\n" +
+                "select count(l.USER_ID), f.film_id, f.name, f.release_date, f.duration, description, mpa.RATING_ID as RATING_ID, mpa.NAME as RATING_NAME\n" +
+                "         from FILM f\n" +
+                "         join MPA on mpa.RATING_ID = f.MPA\n" +
+                "         join LIKES l on f.FILM_ID = l.FILM_ID\n" +
+                "         where l.USER_ID in (?, ?)\n" +
+                "         group by f.FILM_ID having count(l.USER_ID) > 1) as req\n" +
+                "join LIKES l on l.FILM_ID = req.FILM_ID\n" +
+                "group by req.FILM_ID order by counter desc;";
+
+        try {
+            return jdbcTemplate.query(qs, this::makeFilmList, userId, friendId);
+        } catch (DataAccessException e) {
+            throw new FilmNotFoundException("Фильм не найден");
+        }
     }
 
     @Override

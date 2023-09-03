@@ -43,7 +43,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         film.deleteLike(idOfUser);
     }
 
-    public Collection<Film> getMostPopularFilms(Integer count) {
+    public Collection<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
         List<Film> list = films.values().stream()
                 .sorted((x, y) -> {
                     if (x.getLikes() == null) return -1;
@@ -73,6 +73,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     public void deleteFilmById(Long id) {
         films.remove(id);
         log.info("Film entity with id {} was deleted", id);
+    }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return new ArrayList<>();
     }
 
     @Override

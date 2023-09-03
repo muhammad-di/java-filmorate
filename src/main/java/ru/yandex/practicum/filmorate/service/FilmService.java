@@ -15,6 +15,7 @@ import java.util.Collections;
 
 import static ru.yandex.practicum.filmorate.Constants.LIKES_SORT;
 import static ru.yandex.practicum.filmorate.Constants.YEAR_SORT;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -83,8 +84,12 @@ public class FilmService {
         storage.deleteLike(idOfFilm, idOfUser);
     }
 
-    public Collection<Film> getMostPopularFilms(Integer count) {
-        return storage.getMostPopularFilms(count);
+    public Collection<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        return storage.getMostPopularFilms(count, genreId, year);
+    }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return storage.getCommonFilms(userId, friendId);
     }
 
     public Film getFilmById(Long id) throws FilmDoesNotExistException {
