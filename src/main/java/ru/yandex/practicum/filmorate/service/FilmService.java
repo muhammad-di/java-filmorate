@@ -98,6 +98,10 @@ public class FilmService {
         return storage.getMostPopularFilms(count, genreId, year);
     }
 
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return storage.getCommonFilms(userId, friendId);
+    }
+
     public Film getFilmById(Long id) throws FilmDoesNotExistException {
         if (!storage.containsFilm(id)) {
             throw new FilmDoesNotExistException("Film " +

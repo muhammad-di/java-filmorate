@@ -78,4 +78,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     public List<Film> getFilmBySearchByTitleOrDirector(String title, boolean isDirectorCheck, boolean isTitleCheck) {
         return new ArrayList<Film>();
     }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return new ArrayList<>();
+    }
 }

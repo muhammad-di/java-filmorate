@@ -188,6 +188,25 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        final String qs = "select count(l.ID) as counter, req.film_id, name, release_date, duration, description, RATING_ID, RATING_NAME\n" +
+                "from (\n" +
+                "select count(l.USER_ID), f.film_id, f.name, f.release_date, f.duration, description, mpa.RATING_ID as RATING_ID, mpa.NAME as RATING_NAME\n" +
+                "         from FILM f\n" +
+                "         join MPA on mpa.RATING_ID = f.MPA\n" +
+                "         join LIKES l on f.FILM_ID = l.FILM_ID\n" +
+                "         where l.USER_ID in (?, ?)\n" +
+                "         group by f.FILM_ID having count(l.USER_ID) > 1) as req\n" +
+                "join LIKES l on l.FILM_ID = req.FILM_ID\n" +
+                "group by req.FILM_ID order by counter desc;";
+
+        try {
+            return jdbcTemplate.query(qs, this::makeFilmList, userId, friendId);
+        } catch (DataAccessException e) {
+            throw new FilmNotFoundException("Фильм не найден");
+        }
+    }
+
     @Override
     public boolean containsFilm(Long idOfFilm) {
         String sqlQuery = "SELECT \n" +
