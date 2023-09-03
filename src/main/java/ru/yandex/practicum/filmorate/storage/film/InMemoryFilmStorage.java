@@ -74,4 +74,14 @@ public class InMemoryFilmStorage implements FilmStorage {
         films.remove(id);
         log.info("Film entity with id {} was deleted", id);
     }
+
+    @Override
+    public Collection<Film> getFilmsWithDirectorIdSortedByLikes(Long directorId) {
+        return null;
+    }
+
+    @Override
+    public Collection<Film> getFilmsWithDirectorIdSortedByYear(Long directorId) {
+        return null;
+    }
 }

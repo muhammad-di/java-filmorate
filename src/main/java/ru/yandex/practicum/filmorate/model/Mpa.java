@@ -27,4 +27,8 @@ public class Mpa {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+    public Boolean containsValidId() {
+        return id != null && id > 0;
+    }
 }

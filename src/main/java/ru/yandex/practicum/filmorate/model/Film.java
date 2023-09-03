@@ -4,10 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @Builder
@@ -20,6 +17,7 @@ public class Film {
     private String description;
     private List<Genre> genres;
     private Mpa mpa;
+    private Collection<Director> directors;
     private int rate;
 
     public void addLike(long idOfUser) {
@@ -45,5 +43,15 @@ public class Film {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("name", name);
+        values.put("release_date", releaseDate);
+        values.put("duration", duration);
+        values.put("description", description);
+        values.put("mpa", mpa.getId());
+        return values;
     }
 }

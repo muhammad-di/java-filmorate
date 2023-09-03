@@ -46,4 +46,13 @@ public class DirectorController {
     public Director updateDirector(@Valid @RequestBody Director director) throws DirectorDoesNotExistException {
         return service.updateDirector(director);
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteDirectorById(@PathVariable Long id)
+            throws DirectorDoesNotExistException, IncorrectParameterException {
+        if (id < MIN_ID) {
+            throw new IncorrectParameterException("id");
+        }
+        service.deleteDirectorById(id);
+    }
 }

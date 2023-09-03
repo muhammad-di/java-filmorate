@@ -15,7 +15,7 @@ import java.util.Objects;
 @Builder
 public class Director {
     @Min(value = 1, message = "Id should not be less than 1")
-    private long id;
+    private Long id;
     @NotNull(message = "Name is mandatory")
     @NotBlank(message = "Name can not be blank")
     private String name;
@@ -38,5 +38,9 @@ public class Director {
         values.put("id", id);
         values.put("name", name);
         return values;
+    }
+
+    public Boolean containsValidId() {
+        return id != null && id > 0;
     }
 }

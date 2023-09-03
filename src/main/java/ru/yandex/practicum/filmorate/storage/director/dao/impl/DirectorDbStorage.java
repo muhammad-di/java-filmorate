@@ -3,16 +3,12 @@ package ru.yandex.practicum.filmorate.storage.director.dao.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.director.dao.DirectorStorage;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -78,6 +74,15 @@ public class DirectorDbStorage implements DirectorStorage {
 
         jdbcTemplate.update(sqlQuery, director.getName(), director.getId());
         return getDirectorById(director.getId());
+    }
+
+    @Override
+    public void deleteDirectorById(Long id) {
+        String sqlQuery = "DELETE FROM director " +
+                "WHERE " +
+                "director_id = ?";
+
+        jdbcTemplate.update(sqlQuery, id);
     }
 
     // helpers methods for a GetAll method------------------------------------------------------------------------------

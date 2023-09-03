@@ -49,4 +49,11 @@ public class DirectorService {
         return storage.updateDirector(director);
     }
 
+    public void deleteDirectorById(Long id) throws DirectorDoesNotExistException {
+        if (!storage.containsDirector(id)) {
+            String message = String.format("Director with such id {%s} does not exist", id);
+            throw new DirectorDoesNotExistException(message);
+        }
+        storage.deleteDirectorById(id);
+    }
 }
