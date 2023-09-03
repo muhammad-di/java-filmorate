@@ -73,6 +73,14 @@ public class FilmController {
         return filmService.getMostPopularFilms(count, genreId, year);
     }
 
+    @GetMapping("/search")
+    public List<Film> getFilmsBySearch(
+            @RequestParam() String query,
+            @RequestParam() String by
+    ) throws IncorrectParameterException {
+        return filmService.getFilmBySearchByTitleOrDirector(query, by);
+    }
+
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable Long id) throws FilmDoesNotExistException {
         if (id < MIN_ID) {
