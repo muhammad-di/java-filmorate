@@ -16,7 +16,6 @@ public class Film {
     private long id;
     private String description;
     private List<Genre> genres;
-    private List<Director> directors;
     private Mpa mpa;
     private Collection<Director> directors;
     private int rate;
