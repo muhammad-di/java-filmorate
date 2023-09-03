@@ -13,6 +13,9 @@ DROP TABLE IF EXISTS user_review CASCADE;
 DROP TABLE IF EXISTS film_review CASCADE;
 DROP TABLE IF EXISTS reviews_likes CASCADE;
 DROP TABLE IF EXISTS review_likes CASCADE;
+DROP TABLE IF EXISTS director CASCADE;
+DROP TABLE IF EXISTS film_director CASCADE;
+
 
 -- creating a film and film related tables
 
