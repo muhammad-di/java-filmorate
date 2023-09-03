@@ -74,7 +74,7 @@ public class FilmController {
     }
 
     @GetMapping("/search")
-    public List<Film> getFilmsBySearch (
+    public List<Film> getFilmsBySearch(
             @RequestParam() String query,
             @RequestParam() String by
     ) throws IncorrectParameterException {
