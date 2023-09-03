@@ -5,11 +5,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.director.dao.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.dao.UserStorage;
 import ru.yandex.practicum.filmorate.validation.FilmValidation;
 
 import java.util.Collection;
+import java.util.Collections;
+
+import static ru.yandex.practicum.filmorate.Constants.LIKES_SORT;
+import static ru.yandex.practicum.filmorate.Constants.YEAR_SORT;
 import java.util.List;
 
 @Slf4j
@@ -17,11 +22,13 @@ import java.util.List;
 public class FilmService {
     private final FilmStorage storage;
     private final UserStorage userStorage;
+    private final DirectorStorage directorStorage;
 
     @Autowired
-    public FilmService(FilmStorage storage, UserStorage userStorage) {
+    public FilmService(FilmStorage storage, UserStorage userStorage, DirectorStorage directorStorage) {
         this.storage = storage;
         this.userStorage = userStorage;
+        this.directorStorage = directorStorage;
     }
 
     public Collection<Film> findAll() {
@@ -116,5 +123,20 @@ public class FilmService {
                     "with such id {" + id + "} does not exist", 404);
         }
         storage.deleteFilmById(id);
+    }
+
+    public Collection<Film> getFilmsWithDirectorSorted(Long directorId, String sort)
+            throws DirectorDoesNotExistException {
+        if (!directorStorage.containsDirector(directorId)) {
+            String message = String.format("Director with such id {%s} does not exist", directorId);
+            throw new DirectorDoesNotExistException(message);
+        }
+        if (sort.equals(LIKES_SORT)) {
+            return storage.getFilmsWithDirectorIdSortedByLikes(directorId);
+        }
+        if (sort.equals(YEAR_SORT)) {
+            return storage.getFilmsWithDirectorIdSortedByYear(directorId);
+        }
+        return Collections.emptyList();
     }
 }
