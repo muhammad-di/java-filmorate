@@ -15,7 +15,6 @@ import ru.yandex.practicum.filmorate.service.ReviewService;
 import javax.validation.Valid;
 
 import java.util.List;
-import java.util.Optional;
 
 import static ru.yandex.practicum.filmorate.Constants.MIN_ID;
 
@@ -40,7 +39,7 @@ public class ReviewController {
     }
 
     @GetMapping("/{id}")
-    public Optional<Review> getReviewById(@PathVariable Long id) {
+    public Review getReviewById(@PathVariable Long id) {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
@@ -48,7 +47,7 @@ public class ReviewController {
     }
 
     @PutMapping
-    public Optional<Review> updateReview(@RequestBody Review review) {
+    public Review updateReview(@RequestBody Review review) {
         return reviewService.updateReview(review);
     }
 

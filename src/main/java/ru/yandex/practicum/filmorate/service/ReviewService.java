@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.review.dao.ReviewStorage;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -30,11 +29,11 @@ public class ReviewService {
         return storage.createReview(review);
     }
 
-    public Optional<Review> updateReview(Review review) {
+    public Review updateReview(Review review) {
         return storage.updateReview(review);
     }
 
-    public Optional<Review> getReviewById(Long id) {
+    public Review getReviewById(Long id) {
         return storage.getReviewById(id);
     }
 

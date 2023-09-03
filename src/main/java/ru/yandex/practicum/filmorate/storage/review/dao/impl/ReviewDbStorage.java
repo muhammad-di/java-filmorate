@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 
@@ -12,11 +14,12 @@ import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.review.dao.ReviewStorage;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -50,22 +53,24 @@ public class ReviewDbStorage implements ReviewStorage {
             throws FilmDoesNotExistException, UserDoesNotExistException {
         review.setUseful(0L);
 
-        if (review.getReviewId() == null) {
-            review.setReviewId(this.getAllReviews().size() + 1L);
-        }
-
         this.reviewIsValid(review);
 
         String sqlQuery = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
-        jdbcTemplate.update(sqlQuery,
-                review.getContent(),
-                review.getIsPositive(),
-                review.getUserId(),
-                review.getFilmId(),
-                review.getUseful()
-        );
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"review_id"});
+            stmt.setString(1, review.getContent());
+            stmt.setBoolean(2, review.getIsPositive());
+            stmt.setLong(3, review.getUserId());
+            stmt.setLong(4, review.getFilmId());
+            stmt.setLong(5, review.getUseful());
+            return stmt;
+        }, keyHolder);
+
+        review.setReviewId(keyHolder.getKey().longValue());
 
         this.insertValuesToUserReviewsAndFilmReviews(review.getReviewId(),
                 review.getUserId(), review.getFilmId());
@@ -74,7 +79,20 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public Optional<Review> updateReview(Review review) {
+    public Review updateReview(Review review) {
+        List<Long> reviewIds = this.getAllReviews()
+                .stream()
+                .map(review1 -> review.getReviewId())
+                .collect(Collectors.toList());
+
+        if (!reviewIds.contains(review.getReviewId())) {
+            throw new ReviewDoesNotExistException("Review does not exist.");
+        }
+
+        if (review.getReviewId() == null) {
+            throw new IncorrectParameterException("Review id can't be null.");
+        }
+
         String sqlQuery = "UPDATE reviews SET" +
                 " content = ?, is_positive = ? WHERE review_id = ?";
 
@@ -88,7 +106,7 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public Optional<Review> getReviewById(Long id) {
+    public Review getReviewById(Long id) {
         SqlRowSet reviewRow = jdbcTemplate
                 .queryForRowSet("SELECT * FROM reviews WHERE review_id = " + id);
 
@@ -104,7 +122,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
             log.info("Найден отзыв с id: {}.", review.getReviewId());
 
-            return Optional.of(review);
+            return review;
         } else {
             log.info("Отзыв с id: {} не найден.", id);
             throw new ReviewDoesNotExistException();
@@ -113,6 +131,15 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void deleteReviewById(Long id) {
+        List<Long> reviewIds = this.getAllReviews()
+                .stream()
+                .map(review1 -> this.getReviewById(id).getReviewId())
+                .collect(Collectors.toList());
+
+        if (!reviewIds.contains(id)) {
+            throw new ReviewDoesNotExistException("Review does not exist.");
+        }
+
         String sqlQuery = "DELETE FROM reviews WHERE review_id = ?";
 
         jdbcTemplate.update(sqlQuery, id);
