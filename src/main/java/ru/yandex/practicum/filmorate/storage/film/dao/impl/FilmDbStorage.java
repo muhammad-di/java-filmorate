@@ -9,16 +9,14 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
-import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.dao.FilmStorage;
 
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -98,6 +96,7 @@ public class FilmDbStorage implements FilmStorage {
                 "VALUES (?, ?)";
 
         jdbcTemplate.update(sqlQuery, idOfFilm, idOfUser);
+        setFeedEvent(idOfUser, idOfFilm, Operation.ADD);
     }
 
     @Override
@@ -109,6 +108,7 @@ public class FilmDbStorage implements FilmStorage {
                 "USER_ID = ?";
 
         jdbcTemplate.update(sqlQuery, idOfFilm, idOfUser);
+        setFeedEvent(idOfUser, idOfFilm, Operation.REMOVE);
     }
 
     @Override
@@ -160,7 +160,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        final String qs = "select count(l.ID) as counter, req.film_id, name, release_date, duration, description, RATING_ID, RATING_NAME\n" +
+        final String qs = "select count(l.USER_ID) as counter, req.film_id, name, release_date, duration, description, RATING_ID, RATING_NAME\n" +
                 "from (\n" +
                 "select count(l.USER_ID), f.film_id, f.name, f.release_date, f.duration, description, mpa.RATING_ID as RATING_ID, mpa.NAME as RATING_NAME\n" +
                 "         from FILM f\n" +
@@ -685,5 +685,21 @@ public class FilmDbStorage implements FilmStorage {
                 "director_id = ?";
 
         jdbcTemplate.update(sqlQuery, idOfFilm, idOfUser);
+    }
+
+    /////////////////// GET_FEED_OF_USER --------------------------------------------------------------------------------
+
+    private void setFeedEvent(Long id, Long entityId, Operation operation) {
+        FeedEntity feed = FeedEntity.builder()
+                .userId(id)
+                .entityId(entityId)
+                .eventType(EventType.LIKE)
+                .operation(operation)
+                .timestamp(Instant.now().toEpochMilli())
+                .build();
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("feed")
+                .usingGeneratedKeyColumns("event_id");
+        simpleJdbcInsert.execute(feed.toMap());
     }
 }
