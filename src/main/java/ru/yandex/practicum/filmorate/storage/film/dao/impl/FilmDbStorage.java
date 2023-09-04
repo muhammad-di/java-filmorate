@@ -160,7 +160,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        final String qs = "select count(l.ID) as counter, req.film_id, name, release_date, duration, description, RATING_ID, RATING_NAME\n" +
+        final String qs = "select count(l.USER_ID) as counter, req.film_id, name, release_date, duration, description, RATING_ID, RATING_NAME\n" +
                 "from (\n" +
                 "select count(l.USER_ID), f.film_id, f.name, f.release_date, f.duration, description, mpa.RATING_ID as RATING_ID, mpa.NAME as RATING_NAME\n" +
                 "         from FILM f\n" +
