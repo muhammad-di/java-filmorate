@@ -44,4 +44,13 @@ public class User {
     public int hashCode() {
         return Objects.hash(id);
     }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("login", login);
+        values.put("birthday", birthday);
+        values.put("email", email);
+        values.put("name", name);
+        return values;
+    }
 }

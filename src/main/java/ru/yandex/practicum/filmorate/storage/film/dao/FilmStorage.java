@@ -20,7 +20,7 @@ public interface FilmStorage {
 
     Collection<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year);
 
-    boolean containsFilm(Long idOfFilm);
+    Boolean containsFilm(Long idOfFilm);
 
     Film getFilmById(Long id);
 

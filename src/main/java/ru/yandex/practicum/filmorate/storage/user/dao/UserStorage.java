@@ -21,7 +21,7 @@ public interface UserStorage {
 
     Collection<User> getCommonFriends(Long id, Long idOfFriend);
 
-    boolean containsUser(Long idOfUser);
+    Boolean containsUser(Long idOfUser);
 
     User getUserById(Long id);
 

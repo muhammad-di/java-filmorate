@@ -9,5 +9,5 @@ public interface MpaStorage {
 
     Mpa getMpaById(Integer id);
 
-    boolean containsMpa(Integer idOfMpa);
+    Boolean containsMpa(Integer idOfMpa);
 }

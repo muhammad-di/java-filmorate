@@ -9,5 +9,5 @@ public interface GenreStorage {
 
     Genre getGenreById(Integer id);
 
-    boolean containsGenre(Integer idOfGenre);
+    Boolean containsGenre(Integer idOfGenre);
 }

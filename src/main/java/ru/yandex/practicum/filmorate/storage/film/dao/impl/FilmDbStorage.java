@@ -179,21 +179,10 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public boolean containsFilm(Long idOfFilm) {
-        String sqlQuery = "SELECT \n" +
-                "f.FILM_ID\n" +
-                "FROM\n" +
-                "FILM f\n" +
-                "WHERE f.FILM_ID = ?";
+    public Boolean containsFilm(Long idOfFilm) {
+        String sqlQuery = "SELECT EXISTS(SELECT 1 FROM film WHERE film_id = ?) AS is_film";
 
-        SqlRowSet sqlRows = jdbcTemplate.queryForRowSet(sqlQuery, idOfFilm);
-        if (sqlRows.next()) {
-            log.info("Найден фильм c id: {}", idOfFilm);
-            return true;
-        } else {
-            log.info("Фильм с идентификатором {} не найден.", idOfFilm);
-            return false;
-        }
+        return jdbcTemplate.queryForObject(sqlQuery, (rs, rn) -> rs.getBoolean("is_film"), idOfFilm);
     }
 
     @Override

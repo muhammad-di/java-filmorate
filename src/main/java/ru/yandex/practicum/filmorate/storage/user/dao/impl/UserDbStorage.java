@@ -7,10 +7,9 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.FeedEntity;
 import ru.yandex.practicum.filmorate.model.Operation;
@@ -46,24 +45,17 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User create(User user) {
-        String sqlQuery = "INSERT INTO users (LOGIN, BIRTHDAY, EMAIL, NAME) " +
-                "VALUES (?, ?, ?, ?)";
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("users")
+                .usingGeneratedKeyColumns("user_id");
+        long userId = simpleJdbcInsert.executeAndReturnKey(user.toMap()).longValue();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"user_id"});
-            stmt.setString(1, user.getLogin());
-            stmt.setDate(2, Date.valueOf(user.getBirthday()));
-            stmt.setString(3, user.getEmail());
-            stmt.setString(4, user.getName());
-            return stmt;
-        }, keyHolder);
-        user.setId(keyHolder.getKey().longValue());
-        if (user.getFriends() != null) {
+        user.setId(userId);
+        if (!CollectionUtils.isEmpty(user.getFriends())) {
             setFriends(user);
         }
 
-        return getUserById(keyHolder.getKey().longValue());
+        return getUserById(userId);
     }
 
     @Override
@@ -83,7 +75,7 @@ public class UserDbStorage implements UserStorage {
                 user.getName(),
                 user.getId()
         );
-        if (user.getFriends() != null) {
+        if (!CollectionUtils.isEmpty(user.getFriends())) {
             updateFriends(user);
         }
 
@@ -141,20 +133,10 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public boolean containsUser(Long idOfUser) {
-        String sqlQuery = "SELECT \n" +
-                "u.USER_ID\n" +
-                "FROM users u\n" +
-                "WHERE u.USER_ID = ?";
+    public Boolean containsUser(Long idOfUser) {
+        String sqlQuery = "SELECT EXISTS(SELECT 1 FROM users WHERE user_id = ?) AS is_user";
 
-        SqlRowSet userRows = jdbcTemplate.queryForRowSet(sqlQuery, idOfUser);
-        if (userRows.next()) {
-            log.info("Найден пользователь c id: {}", idOfUser);
-            return true;
-        } else {
-            log.info("Пользователь с идентификатором {} не найден.", idOfUser);
-            return false;
-        }
+        return jdbcTemplate.queryForObject(sqlQuery, (rs, rn) -> rs.getBoolean("is_user"), idOfUser);
     }
 
     @Override

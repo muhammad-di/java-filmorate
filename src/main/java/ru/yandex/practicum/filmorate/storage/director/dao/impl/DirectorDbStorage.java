@@ -42,18 +42,18 @@ public class DirectorDbStorage implements DirectorStorage {
     }
 
     public Boolean containsDirector(Long id) {
-        String sqlQuery = "SELECT EXISTS(SELECT 1 FROM director WHERE director_id = ?) AS director";
+        String sqlQuery = "SELECT EXISTS(SELECT 1 FROM director WHERE director_id = ?) AS is_director";
 
         return jdbcTemplate.queryForObject(sqlQuery,
-                (rs, rn) -> rs.getBoolean("director"),
+                (rs, rn) -> rs.getBoolean("is_director"),
                 id);
     }
 
     public Boolean containsDirector(String name) {
-        String sqlQuery = "SELECT EXISTS(SELECT 1 FROM director WHERE name = ?) AS director";
+        String sqlQuery = "SELECT EXISTS(SELECT 1 FROM director WHERE name = ?) AS is_director";
 
         return jdbcTemplate.queryForObject(sqlQuery,
-                (rs, rn) -> rs.getBoolean("director"),
+                (rs, rn) -> rs.getBoolean("is_director"),
                 name);
     }
 

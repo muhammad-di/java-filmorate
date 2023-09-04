@@ -40,7 +40,7 @@ public class MpaDbStorage implements MpaStorage {
 
 
     @Override
-    public boolean containsMpa(Integer idOfMpa) {
+    public Boolean containsMpa(Integer idOfMpa) {
         String sqlQuery = "SELECT EXISTS(SELECT 1 FROM mpa WHERE rating_id = ?) AS RATING";
 
         return jdbcTemplate.queryForObject(sqlQuery, (rs, rn) -> rs.getBoolean("RATING"), idOfMpa);
