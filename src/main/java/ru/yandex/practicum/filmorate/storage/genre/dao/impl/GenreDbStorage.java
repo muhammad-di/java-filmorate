@@ -37,14 +37,14 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public Boolean containsGenre(Integer idOfGenre) {
+    public Boolean contains(Integer idOfGenre) {
         String sqlQuery = "SELECT EXISTS(SELECT 1 FROM genre WHERE genre_id = ?) AS is_genre";
 
         return jdbcTemplate.queryForObject(sqlQuery, (rs, rn) -> rs.getBoolean("is_genre"), idOfGenre);
     }
 
     @Override
-    public Genre getGenreById(Integer id) {
+    public Genre findById(Integer id) {
         String sqlQuery = "SELECT\n" +
                 "          g.genre_id,\n" +
                 "          g.name\n" +

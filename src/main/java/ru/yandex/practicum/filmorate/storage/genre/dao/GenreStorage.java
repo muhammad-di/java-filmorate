@@ -7,7 +7,7 @@ import java.util.Collection;
 public interface GenreStorage {
     Collection<Genre> findAll();
 
-    Genre getGenreById(Integer id);
+    Genre findById(Integer id);
 
-    Boolean containsGenre(Integer idOfGenre);
+    Boolean contains(Integer idOfGenre);
 }

@@ -24,25 +24,25 @@ public class ReviewService {
         this.storage = storage;
     }
 
-    public Review createReview(Review review)
+    public Review create(Review review)
             throws FilmDoesNotExistException, UserDoesNotExistException, InvalidReviewPropertiesException {
-        return storage.createReview(review);
+        return storage.create(review);
     }
 
-    public Review updateReview(Review review) {
-        return storage.updateReview(review);
+    public Review update(Review review) {
+        return storage.update(review);
     }
 
-    public Review getReviewById(Long id) {
-        return storage.getReviewById(id);
+    public Review findById(Long id) {
+        return storage.findById(id);
     }
 
-    public void deleteReviewById(Long id) {
-        storage.deleteReviewById(id);
+    public void deleteById(Long id) {
+        storage.deleteById(id);
     }
 
-    public List<Review> getAllReviews(Long filmId, Long count) {
-        return storage.getAllReviews(filmId, count);
+    public List<Review> findAll(Long filmId, Long count) {
+        return storage.findAll(filmId, count);
     }
 
     public void addLike(Long reviewId, Long userId) {

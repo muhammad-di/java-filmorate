@@ -32,7 +32,7 @@ public class UserService {
             log.info("User validation error");
             throw new InvalidUserPropertiesException("Invalid properties for a user", 406);
         }
-        if (storage.containsUser(user.getId())) {
+        if (storage.contains(user.getId())) {
             log.info("User already exists error");
             throw new UserAlreadyExistException("User already exists", 409);
         }
@@ -44,7 +44,7 @@ public class UserService {
 
     public User update(User user)
             throws UserDoesNotExistException, InvalidUserPropertiesException {
-        containsUser(user.getId());
+        contains(user.getId());
         if (UserValidation.validate(user)) {
             log.info("User validation error");
             throw new InvalidUserPropertiesException("Invalid name if a film", 406);
@@ -55,47 +55,47 @@ public class UserService {
         return storage.update(user);
     }
 
-    public Collection<User> getAllFriends(Long id) throws UserDoesNotExistException {
-        containsUser(id);
-        return storage.getAllFriends(id);
+    public Collection<User> findAllFriends(Long id) throws UserDoesNotExistException {
+        contains(id);
+        return storage.findAllFriends(id);
     }
 
     public void addFriend(Long id, Long idOfFriend) throws UserDoesNotExistException {
-        containsUser(id);
-        containsUser(idOfFriend);
+        contains(id);
+        contains(idOfFriend);
         storage.addFriend(id, idOfFriend);
     }
 
     public void deleteFriend(Long id, Long idOfFriend) throws UserDoesNotExistException {
-        containsUser(id);
-        containsUser(idOfFriend);
+        contains(id);
+        contains(idOfFriend);
         storage.deleteFriend(id, idOfFriend);
     }
 
-    public Collection<User> getCommonFriends(Long id, Long idOfFriend)
+    public Collection<User> findCommonFriends(Long id, Long idOfFriend)
             throws UserDoesNotExistException {
-        containsUser(id);
-        containsUser(idOfFriend);
-        return storage.getCommonFriends(id, idOfFriend);
+        contains(id);
+        contains(idOfFriend);
+        return storage.findCommonFriends(id, idOfFriend);
     }
 
-    public User getUserById(Long id) throws UserDoesNotExistException {
-        containsUser(id);
-        return storage.getUserById(id);
+    public User findById(Long id) throws UserDoesNotExistException {
+        contains(id);
+        return storage.findById(id);
     }
 
-    public void deleteUserById(Long id) throws UserDoesNotExistException {
-        containsUser(id);
-        storage.deleteUserById(id);
+    public void deleteById(Long id) throws UserDoesNotExistException {
+        contains(id);
+        storage.deleteById(id);
     }
 
-    public Collection<FeedEntity> getFeedOfUser(Long id) throws UserDoesNotExistException {
-        containsUser(id);
-        return storage.getFeedOfUser(id);
+    public Collection<FeedEntity> findFeedOfUser(Long id) throws UserDoesNotExistException {
+        contains(id);
+        return storage.findFeedOfUser(id);
     }
 
-    private void containsUser(Long id) throws UserDoesNotExistException {
-        if (!storage.containsUser(id)) {
+    private void contains(Long id) throws UserDoesNotExistException {
+        if (!storage.contains(id)) {
             throw new UserDoesNotExistException("User " +
                     "with such id {" + id + "} does not exist", 404);
         }

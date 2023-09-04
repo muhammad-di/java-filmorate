@@ -27,28 +27,28 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping
-    public Review createReview(@RequestBody Review review)
+    public Review create(@RequestBody Review review)
             throws InvalidReviewPropertiesException, FilmDoesNotExistException, UserDoesNotExistException {
-        return reviewService.createReview(review);
+        return reviewService.create(review);
     }
 
     @GetMapping
-    public List<Review> getAllReviews(@RequestParam(required = false) Long filmId,
+    public List<Review> findAll(@RequestParam(required = false) Long filmId,
                                       @RequestParam(required = false) Long count) {
-        return reviewService.getAllReviews(filmId, count);
+        return reviewService.findAll(filmId, count);
     }
 
     @GetMapping("/{id}")
-    public Review getReviewById(@PathVariable Long id) {
+    public Review findById(@PathVariable Long id) {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
-        return reviewService.getReviewById(id);
+        return reviewService.findById(id);
     }
 
     @PutMapping
-    public Review updateReview(@Valid @RequestBody Review review) {
-        return reviewService.updateReview(review);
+    public Review update(@Valid @RequestBody Review review) {
+        return reviewService.update(review);
     }
 
     @PutMapping("/{id}/like/{userId}")
@@ -72,10 +72,10 @@ public class ReviewController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteReviewById(@PathVariable Long id) {
+    public void deleteById(@PathVariable Long id) {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
-        reviewService.deleteReviewById(id);
+        reviewService.deleteById(id);
     }
 }

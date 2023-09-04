@@ -41,9 +41,9 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> getAllFriends(@PathVariable Long id)
+    public Collection<User> findAllFriends(@PathVariable Long id)
             throws UserDoesNotExistException {
-        return userService.getAllFriends(id);
+        return userService.findAllFriends(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -69,7 +69,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId)
+    public Collection<User> findCommonFriends(@PathVariable Long id, @PathVariable Long otherId)
             throws UserDoesNotExistException {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
@@ -77,31 +77,31 @@ public class UserController {
         if (otherId < MIN_ID) {
             throw new IncorrectParameterException("otherId");
         }
-        return userService.getCommonFriends(id, otherId);
+        return userService.findCommonFriends(id, otherId);
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) throws UserDoesNotExistException {
+    public User findById(@PathVariable Long id) throws UserDoesNotExistException {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
-        return userService.getUserById(id);
+        return userService.findById(id);
     }
 
     @GetMapping("/{id}/recommendations")
-    public Set<Film> getRecommendedFilms(@PathVariable Long id) {
+    public Set<Film> findRecommendedFilms(@PathVariable Long id) {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
-        return recommendationsService.getRecommendedFilms(id);
+        return recommendationsService.findRecommendedFilms(id);
     }
 
     @DeleteMapping("/{userId}")
-    public void deleteUserById(@PathVariable Long userId) throws UserDoesNotExistException {
+    public void deleteById(@PathVariable Long userId) throws UserDoesNotExistException {
         if (userId < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
-        userService.deleteUserById(userId);
+        userService.deleteById(userId);
     }
 
     @GetMapping("/{id}/feed")
@@ -109,6 +109,6 @@ public class UserController {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
-        return userService.getFeedOfUser(id);
+        return userService.findFeedOfUser(id);
     }
 }

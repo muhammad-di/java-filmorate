@@ -62,7 +62,7 @@ public class FilmDbStorage implements FilmStorage {
         setRating(film);
         setDirector(film);
 
-        return getFilmById(film.getId());
+        return findById(film.getId());
     }
 
     @Override
@@ -87,7 +87,7 @@ public class FilmDbStorage implements FilmStorage {
         updateLikes(film);
         updateGenre(film);
         updateDirector(film);
-        return getFilmById(film.getId());
+        return findById(film.getId());
     }
 
     @Override
@@ -112,7 +112,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
+    public Collection<Film> findMostPopularFilms(Integer count, Integer genreId, Integer year) {
         String sqlQuery = "SELECT " +
                 "          t.film_id,\n" +
                 "          t.name,\n" +
@@ -163,7 +163,7 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+    public List<Film> findCommonFilms(Integer userId, Integer friendId) {
         final String qs = "SELECT" +
                 "          COUNT(l.user_id) AS counter," +
                 "          req.film_id, name," +
@@ -198,14 +198,14 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Boolean containsFilm(Long idOfFilm) {
+    public Boolean contains(Long idOfFilm) {
         String sqlQuery = "SELECT EXISTS(SELECT 1 FROM film WHERE film_id = ?) AS is_film";
 
         return jdbcTemplate.queryForObject(sqlQuery, (rs, rn) -> rs.getBoolean("is_film"), idOfFilm);
     }
 
     @Override
-    public Film getFilmById(Long id) {
+    public Film findById(Long id) {
         String sqlQuery = "SELECT\n" +
                 "          f.film_id,\n" +
                 "          f.name,\n" +
@@ -222,7 +222,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Set<Long> getIdLikedFilmsByUser(Long id) {
+    public Set<Long> findIdLikedFilmsByUser(Long id) {
         String sqlQuery = "SELECT film_id " +
                 "          FROM likes " +
                 "          WHERE user_id = ?";
@@ -236,7 +236,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public void deleteFilmById(Long id) {
+    public void deleteById(Long id) {
         String sqlQuery = "DELETE FROM film " +
                 "          WHERE film_id = ?";
 
@@ -245,7 +245,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilmBySearchByTitleOrDirector(String title, boolean isDirectorCheck, boolean isTitleCheck) {
+    public List<Film> findFilmBySearchByTitleOrDirector(String title, boolean isDirectorCheck, boolean isTitleCheck) {
         List<String> params = new ArrayList<>();
         title = "%".concat(title).concat("%");
         String qs = "SELECT " +
@@ -286,7 +286,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getFilmsWithDirectorIdSortedByLikes(Long directorId) {
+    public Collection<Film> findFilmsWithDirectorIdSortedByLikes(Long directorId) {
         String sqlQueryWhenLikesArePresent = "SELECT\n" +
                 "                             f.film_id,\n" +
                 "                             f.name,\n" +
@@ -334,7 +334,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getFilmsWithDirectorIdSortedByYear(Long directorId) {
+    public Collection<Film> findFilmsWithDirectorIdSortedByYear(Long directorId) {
         String sqlQuery = "SELECT\n" +
                 "          f.film_id,\n" +
                 "          f.name,\n" +
@@ -353,15 +353,6 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     // helpers methods for a CREATE method------------------------------------------------------------------------------
-
-//    private List<Film> makeFilmList(ResultSet rs) throws SQLException, DataAccessException {
-//        List<Film> filmList = new ArrayList<>();
-//
-//        while (rs.next()) {
-//            filmList.add(makeFilm(rs));
-//        }
-//        return filmList;
-//    }
 
     private Film mapRowToFilm(ResultSet rs, Integer rowNum) throws SQLException {
         long id = rs.getLong("film_id");

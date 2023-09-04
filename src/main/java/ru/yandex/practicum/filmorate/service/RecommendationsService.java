@@ -16,11 +16,11 @@ public class RecommendationsService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
 
-    public Set<Film> getRecommendedFilms(Long userId) {
+    public Set<Film> findRecommendedFilms(Long userId) {
         Map<Long, Set<Long>> allUsersWithTheirLikedFilm = userStorage.findAll()
                 .stream()
                 .collect(Collectors.toMap(User::getId,
-                        user -> filmStorage.getIdLikedFilmsByUser(user.getId())));
+                        user -> filmStorage.findIdLikedFilmsByUser(user.getId())));
 
         List<Long> idUsersBySimilarLikes = new ArrayList<>();
         long maxCount = 0;
@@ -44,9 +44,9 @@ public class RecommendationsService {
         if (maxCount > 0) {
             idUsersBySimilarLikes.sort(Comparator.naturalOrder());
             return idUsersBySimilarLikes.stream()
-                    .flatMap(idUser -> filmStorage.getIdLikedFilmsByUser(idUser).stream())
+                    .flatMap(idUser -> filmStorage.findIdLikedFilmsByUser(idUser).stream())
                     .filter(filmId -> !allUsersWithTheirLikedFilm.get(userId).contains(filmId))
-                    .map(filmStorage::getFilmById)
+                    .map(filmStorage::findById)
                     .collect(Collectors.toSet());
         } else {
             return new HashSet<>();

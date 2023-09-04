@@ -52,7 +52,7 @@ public class UserDbStorage implements UserStorage {
             setFriends(user);
         }
 
-        return getUserById(userId);
+        return findById(userId);
     }
 
     @Override
@@ -76,11 +76,11 @@ public class UserDbStorage implements UserStorage {
             updateFriends(user);
         }
 
-        return getUserById(user.getId());
+        return findById(user.getId());
     }
 
     @Override
-    public Collection<User> getAllFriends(Long id) {
+    public Collection<User> findAllFriends(Long id) {
         String sqlQuery = "SELECT \n" +
                 "f.friend_id,\n" +
                 "u.user_id,\n" +
@@ -119,7 +119,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public Collection<User> getCommonFriends(Long id, Long idOfFriend) {
+    public Collection<User> findCommonFriends(Long id, Long idOfFriend) {
         String sqlQuery = "SELECT\n" +
                 "u.*\n" +
                 "FROM users u\n" +
@@ -141,14 +141,14 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public Boolean containsUser(Long idOfUser) {
+    public Boolean contains(Long idOfUser) {
         String sqlQuery = "SELECT EXISTS(SELECT 1 FROM users WHERE user_id = ?) AS is_user";
 
         return jdbcTemplate.queryForObject(sqlQuery, (rs, rn) -> rs.getBoolean("is_user"), idOfUser);
     }
 
     @Override
-    public User getUserById(Long id) {
+    public User findById(Long id) {
         String sqlQuery = "SELECT\n" +
                 "u.user_id,\n" +
                 "u.login,\n" +
@@ -161,7 +161,7 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, id);
     }
 
-    public void deleteUserById(Long id) {
+    public void deleteById(Long id) {
         String sqlQuery = "DELETE FROM users " +
                 "WHERE " +
                 "user_id = ?";
@@ -170,7 +170,7 @@ public class UserDbStorage implements UserStorage {
         log.info("Пользователь с идентификатором {} удален.", id);
     }
 
-    public Collection<FeedEntity> getFeedOfUser(Long id) {
+    public Collection<FeedEntity> findFeedOfUser(Long id) {
         String sqlQuery = "SELECT \n" +
                 "f.event_id,\n" +
                 "f.user_id,\n" +

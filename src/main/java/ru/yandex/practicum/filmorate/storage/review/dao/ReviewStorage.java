@@ -8,16 +8,16 @@ import ru.yandex.practicum.filmorate.model.Review;
 import java.util.List;
 
 public interface ReviewStorage {
-    Review createReview(Review review) throws FilmDoesNotExistException,
+    Review create(Review review) throws FilmDoesNotExistException,
             UserDoesNotExistException, InvalidReviewPropertiesException;
 
-    Review updateReview(Review review);
+    Review update(Review review);
 
-    Review getReviewById(Long id);
+    Review findById(Long id);
 
-    void deleteReviewById(Long id);
+    void deleteById(Long id);
 
-    List<Review> getAllReviews(Long filmId, Long count);
+    List<Review> findAll(Long filmId, Long count);
 
     void addLike(Long reviewId, Long userId);
 

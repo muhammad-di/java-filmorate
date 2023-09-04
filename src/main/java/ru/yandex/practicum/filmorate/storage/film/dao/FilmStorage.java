@@ -18,21 +18,21 @@ public interface FilmStorage {
 
     void deleteLike(Long id, Long idOfFriend);
 
-    Collection<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year);
+    Collection<Film> findMostPopularFilms(Integer count, Integer genreId, Integer year);
 
-    Boolean containsFilm(Long idOfFilm);
+    Boolean contains(Long idOfFilm);
 
-    Film getFilmById(Long id);
+    Film findById(Long id);
 
-    Set<Long> getIdLikedFilmsByUser(Long id);
+    Set<Long> findIdLikedFilmsByUser(Long id);
 
-    List<Film> getFilmBySearchByTitleOrDirector(String title, boolean isDirectorCheck, boolean isTitleCheck);
+    List<Film> findFilmBySearchByTitleOrDirector(String title, boolean isDirectorCheck, boolean isTitleCheck);
 
-    void deleteFilmById(Long id);
+    void deleteById(Long id);
 
-    List<Film> getCommonFilms(Integer userId, Integer friendId);
+    List<Film> findCommonFilms(Integer userId, Integer friendId);
 
-    Collection<Film> getFilmsWithDirectorIdSortedByLikes(Long directorId);
+    Collection<Film> findFilmsWithDirectorIdSortedByLikes(Long directorId);
 
-    Collection<Film> getFilmsWithDirectorIdSortedByYear(Long directorId);
+    Collection<Film> findFilmsWithDirectorIdSortedByYear(Long directorId);
 }

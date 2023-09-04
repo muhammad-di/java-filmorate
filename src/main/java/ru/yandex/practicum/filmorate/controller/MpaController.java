@@ -24,10 +24,10 @@ public class MpaController {
     }
 
     @GetMapping("/{id}")
-    public Mpa getMpaById(@PathVariable Integer id) throws MpaDoesNotExistException {
+    public Mpa findById(@PathVariable Integer id) throws MpaDoesNotExistException {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
-        return mpaService.getMpaById(id);
+        return mpaService.findById(id);
     }
 }

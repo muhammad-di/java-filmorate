@@ -6,17 +6,17 @@ import java.util.Collection;
 
 
 public interface DirectorStorage {
-    Collection<Director> getAllDirectors();
+    Collection<Director> findAll();
 
-    Director getDirectorById(Long id);
+    Director findById(Long id);
 
-    Boolean containsDirector(Long id);
+    Boolean contains(Long id);
 
-    Boolean containsDirector(String name);
+    Boolean contains(Director director);
 
-    Director createDirector(Director director);
+    Director create(Director director);
 
-    Director updateDirector(Director director);
+    Director update(Director director);
 
-    void deleteDirectorById(Long id);
+    void deleteById(Long id);
 }

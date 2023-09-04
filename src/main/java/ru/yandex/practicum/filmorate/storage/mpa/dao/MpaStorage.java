@@ -7,7 +7,7 @@ import java.util.Collection;
 public interface MpaStorage {
     Collection<Mpa> findAll();
 
-    Mpa getMpaById(Integer id);
+    Mpa findById(Integer id);
 
-    Boolean containsMpa(Integer idOfMpa);
+    Boolean contains(Integer idOfMpa);
 }

@@ -18,42 +18,37 @@ public class DirectorService {
     @Autowired
     private final DirectorStorage storage;
 
-    public Collection<Director> getAllDirectors() {
-        return storage.getAllDirectors();
+    public Collection<Director> findAll() {
+        return storage.findAll();
     }
 
-    public Director getDirectorById(Long id) throws DirectorDoesNotExistException {
-        if (!storage.containsDirector(id)) {
+    public Director findById(Long id) throws DirectorDoesNotExistException {
+        Director director = storage.findById(id);
+        if (director == null) {
             throw new DirectorDoesNotExistException("Director with such id {" + id + "} does not exist", 404);
         }
-        return storage.getDirectorById(id);
+        return director;
     }
 
-    public Director createDirector(Director director) throws DirectorAlreadyExistException {
-        if (storage.containsDirector(director.getId())) {
-            String message = String.format("A director with such id {%s} already exists", director.getId());
+    public Director create(Director director) throws DirectorAlreadyExistException {
+        if (storage.contains(director)) {
+            String message = String.format("Such director with id {%d} or name {%S} already exists",
+                    director.getId(),
+                    director.getName());
             throw new DirectorAlreadyExistException(message);
         }
-        if (storage.containsDirector(director.getName())) {
-            String message = String.format("A director with such name {%s} already exists", director.getName());
-            throw new DirectorAlreadyExistException(message);
-        }
-        return storage.createDirector(director);
+        return storage.create(director);
     }
 
-    public Director updateDirector(Director director) throws DirectorDoesNotExistException {
-        if (!storage.containsDirector(director.getId())) {
+    public Director update(Director director) throws DirectorDoesNotExistException {
+        if (!storage.contains(director.getId())) {
             String message = String.format("Director with such id {%s} does not exist", director.getId());
             throw new DirectorDoesNotExistException(message);
         }
-        return storage.updateDirector(director);
+        return storage.update(director);
     }
 
-    public void deleteDirectorById(Long id) throws DirectorDoesNotExistException {
-        if (!storage.containsDirector(id)) {
-            String message = String.format("Director with such id {%s} does not exist", id);
-            throw new DirectorDoesNotExistException(message);
-        }
-        storage.deleteDirectorById(id);
+    public void deleteById(Long id) {
+        storage.deleteById(id);
     }
 }

@@ -35,7 +35,7 @@ public class FilmService {
         return storage.findAll();
     }
 
-    public List<Film> getFilmBySearchByTitleOrDirector(String title, String by) throws IncorrectParameterException {
+    public List<Film> findFilmBySearchByTitleOrDirector(String title, String by) throws IncorrectParameterException {
         boolean isDirectorCheck = false;
         boolean isTitleCheck = false;
         for (String value : by.split(",")) {
@@ -49,7 +49,7 @@ public class FilmService {
         if (!isDirectorCheck && !isTitleCheck) {
             throw new IncorrectParameterException("Не заполнен параметр поиска by");
         }
-        return storage.getFilmBySearchByTitleOrDirector(title, isDirectorCheck, isTitleCheck);
+        return storage.findFilmBySearchByTitleOrDirector(title, isDirectorCheck, isTitleCheck);
     }
 
     public Film create(Film film) throws InvalidFilmPropertiesException, FilmAlreadyExistException {
@@ -57,7 +57,7 @@ public class FilmService {
             log.info("film validation error");
             throw new InvalidFilmPropertiesException("Invalid name of a film", 406);
         }
-        if (storage.containsFilm(film.getId())) {
+        if (storage.contains(film.getId())) {
             log.info("Film already exists error");
             throw new FilmAlreadyExistException("Film already exists", 409);
         }
@@ -65,7 +65,7 @@ public class FilmService {
     }
 
     public Film update(Film film) throws FilmDoesNotExistException, InvalidFilmPropertiesException {
-        if (!storage.containsFilm(film.getId())) {
+        if (!storage.contains(film.getId())) {
             throw new FilmDoesNotExistException("Film with such id {" + film.getId() + "} does not exist", 404);
         }
         if (FilmValidation.validate(film)) {
@@ -77,11 +77,11 @@ public class FilmService {
 
     public void addLike(Long idOfFilm, Long idOfUser)
             throws FilmDoesNotExistException, UserDoesNotExistException {
-        if (!storage.containsFilm(idOfFilm)) {
+        if (!storage.contains(idOfFilm)) {
             throw new FilmDoesNotExistException("Film " +
                     "with such id {" + idOfFilm + "} does not exist", 404);
         }
-        if (!userStorage.containsUser(idOfUser)) {
+        if (!userStorage.contains(idOfUser)) {
             throw new UserDoesNotExistException("User " +
                     "with such id {" + idOfUser + "} does not exist", 404);
         }
@@ -90,52 +90,52 @@ public class FilmService {
 
     public void deleteLike(Long idOfFilm, Long idOfUser)
             throws FilmDoesNotExistException, UserDoesNotExistException {
-        if (!storage.containsFilm(idOfFilm)) {
+        if (!storage.contains(idOfFilm)) {
             throw new FilmDoesNotExistException("Film " +
                     "with such id {" + idOfFilm + "} does not exist", 404);
         }
-        if (!userStorage.containsUser(idOfUser)) {
+        if (!userStorage.contains(idOfUser)) {
             throw new UserDoesNotExistException("User " +
                     "with such id {" + idOfUser + "} does not exist", 404);
         }
         storage.deleteLike(idOfFilm, idOfUser);
     }
 
-    public Collection<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
-        return storage.getMostPopularFilms(count, genreId, year);
+    public Collection<Film> findMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        return storage.findMostPopularFilms(count, genreId, year);
     }
 
-    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        return storage.getCommonFilms(userId, friendId);
+    public List<Film> findCommonFilms(Integer userId, Integer friendId) {
+        return storage.findCommonFilms(userId, friendId);
     }
 
-    public Film getFilmById(Long id) throws FilmDoesNotExistException {
-        if (!storage.containsFilm(id)) {
+    public Film findById(Long id) throws FilmDoesNotExistException {
+        if (!storage.contains(id)) {
             throw new FilmDoesNotExistException("Film " +
                     "with such id {" + id + "} does not exist", 404);
         }
-        return storage.getFilmById(id);
+        return storage.findById(id);
     }
 
-    public void deleteFilmById(Long id) throws FilmDoesNotExistException {
-        if (!storage.containsFilm(id)) {
+    public void deleteById(Long id) throws FilmDoesNotExistException {
+        if (!storage.contains(id)) {
             throw new FilmDoesNotExistException("Film " +
                     "with such id {" + id + "} does not exist", 404);
         }
-        storage.deleteFilmById(id);
+        storage.deleteById(id);
     }
 
-    public Collection<Film> getFilmsWithDirectorSorted(Long directorId, String sort)
+    public Collection<Film> findFilmsWithDirectorSorted(Long directorId, String sort)
             throws DirectorDoesNotExistException {
-        if (!directorStorage.containsDirector(directorId)) {
+        if (!directorStorage.contains(directorId)) {
             String message = String.format("Director with such id {%s} does not exist", directorId);
             throw new DirectorDoesNotExistException(message);
         }
         if (sort.equals(LIKES_SORT)) {
-            return storage.getFilmsWithDirectorIdSortedByLikes(directorId);
+            return storage.findFilmsWithDirectorIdSortedByLikes(directorId);
         }
         if (sort.equals(YEAR_SORT)) {
-            return storage.getFilmsWithDirectorIdSortedByYear(directorId);
+            return storage.findFilmsWithDirectorIdSortedByYear(directorId);
         }
         return Collections.emptyList();
     }

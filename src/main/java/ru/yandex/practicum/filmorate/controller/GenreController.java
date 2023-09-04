@@ -28,10 +28,10 @@ public class GenreController {
     }
 
     @GetMapping("/{id}")
-    public Genre getGenreById(@PathVariable Integer id) throws GenreDoesNotExistException {
+    public Genre findById(@PathVariable Integer id) throws GenreDoesNotExistException {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
-        return genreService.getGenreById(id);
+        return genreService.findById(id);
     }
 }

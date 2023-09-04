@@ -24,35 +24,35 @@ public class DirectorController {
     private final DirectorService service;
 
     @GetMapping
-    public Collection<Director> getAllDirectors() {
-        return service.getAllDirectors();
+    public Collection<Director> findAll() {
+        return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public Director getDirectorById(@PathVariable Long id)
+    public Director findById(@PathVariable Long id)
             throws DirectorDoesNotExistException, IncorrectParameterException {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
-        return service.getDirectorById(id);
+        return service.findById(id);
     }
 
     @PostMapping
-    public Director createDirector(@Valid @RequestBody Director director) throws DirectorAlreadyExistException {
-        return service.createDirector(director);
+    public Director create(@Valid @RequestBody Director director) throws DirectorAlreadyExistException {
+        return service.create(director);
     }
 
     @PutMapping
-    public Director updateDirector(@Valid @RequestBody Director director) throws DirectorDoesNotExistException {
-        return service.updateDirector(director);
+    public Director update(@Valid @RequestBody Director director) throws DirectorDoesNotExistException {
+        return service.update(director);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteDirectorById(@PathVariable Long id)
-            throws DirectorDoesNotExistException, IncorrectParameterException {
+    public void deleteById(@PathVariable Long id)
+            throws IncorrectParameterException {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
-        service.deleteDirectorById(id);
+        service.deleteById(id);
     }
 }

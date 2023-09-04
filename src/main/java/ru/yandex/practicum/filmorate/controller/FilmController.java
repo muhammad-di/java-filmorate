@@ -62,7 +62,7 @@ public class FilmController {
     public Collection<Film> getCommonFilms(
             @RequestParam Integer userId,
             @RequestParam Integer friendId) {
-        return filmService.getCommonFilms(userId, friendId);
+        return filmService.findCommonFilms(userId, friendId);
     }
 
     @GetMapping("/popular")
@@ -71,7 +71,7 @@ public class FilmController {
             @RequestParam(required = false) Integer genreId,
             @RequestParam(required = false) Integer year
     ) {
-        return filmService.getMostPopularFilms(count, genreId, year);
+        return filmService.findMostPopularFilms(count, genreId, year);
     }
 
     @GetMapping("/search")
@@ -79,7 +79,7 @@ public class FilmController {
             @RequestParam() String query,
             @RequestParam() String by
     ) throws IncorrectParameterException {
-        return filmService.getFilmBySearchByTitleOrDirector(query, by);
+        return filmService.findFilmBySearchByTitleOrDirector(query, by);
     }
 
     @GetMapping("/{id}")
@@ -87,7 +87,7 @@ public class FilmController {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
-        return filmService.getFilmById(id);
+        return filmService.findById(id);
     }
 
     @DeleteMapping("/{filmId}")
@@ -95,7 +95,7 @@ public class FilmController {
         if (filmId < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
-        filmService.deleteFilmById(filmId);
+        filmService.deleteById(filmId);
     }
 
     @GetMapping("/director/{directorId}")
@@ -108,6 +108,6 @@ public class FilmController {
         if (!StringUtils.hasText(sortBy)) {
             throw new IncorrectParameterException("sortBy");
         }
-        return filmService.getFilmsWithDirectorSorted(directorId, sortBy);
+        return filmService.findFilmsWithDirectorSorted(directorId, sortBy);
     }
 }

@@ -23,10 +23,10 @@ public class GenreService {
         return storage.findAll();
     }
 
-    public Genre getGenreById(Integer id) throws GenreDoesNotExistException {
-        if (!storage.containsGenre(id)) {
+    public Genre findById(Integer id) throws GenreDoesNotExistException {
+        if (!storage.contains(id)) {
             throw new GenreDoesNotExistException("genre rating with such id {" + id + "} does not exist", 404);
         }
-        return storage.getGenreById(id);
+        return storage.findById(id);
     }
 }

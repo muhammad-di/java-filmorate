@@ -51,7 +51,7 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public Review createReview(Review review)
+    public Review create(Review review)
             throws FilmDoesNotExistException, UserDoesNotExistException {
         review.setUseful(0L);
 
@@ -74,7 +74,7 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public Review updateReview(Review review) {
+    public Review update(Review review) {
         List<Long> reviewIds = this.getAllReviews()
                 .stream()
                 .map(review1 -> review.getReviewId())
@@ -100,11 +100,11 @@ public class ReviewDbStorage implements ReviewStorage {
                 review.getReviewId()
         );
 
-        return this.getReviewById(review.getReviewId());
+        return this.findById(review.getReviewId());
     }
 
     @Override
-    public Review getReviewById(Long id) {
+    public Review findById(Long id) {
         SqlRowSet reviewRow = jdbcTemplate
                 .queryForRowSet("SELECT * FROM reviews WHERE review_id = " + id);
 
@@ -128,10 +128,10 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public void deleteReviewById(Long id) {
+    public void deleteById(Long id) {
         List<Long> reviewIds = this.getAllReviews()
                 .stream()
-                .map(review1 -> this.getReviewById(id).getReviewId())
+                .map(review1 -> this.findById(id).getReviewId())
                 .collect(Collectors.toList());
 
         if (!reviewIds.contains(id)) {
@@ -146,7 +146,7 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public List<Review> getAllReviews(Long filmId, Long count) {
+    public List<Review> findAll(Long filmId, Long count) {
 
         String getAllReviewsByFilmId = "SELECT * " +
                 "                       FROM reviews " +

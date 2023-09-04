@@ -13,19 +13,19 @@ public interface UserStorage {
 
     User update(User user);
 
-    Collection<User> getAllFriends(Long id);
+    Collection<User> findAllFriends(Long id);
 
     void addFriend(Long id, Long idOfFriend);
 
     void deleteFriend(Long id, Long idOfFriend);
 
-    Collection<User> getCommonFriends(Long id, Long idOfFriend);
+    Collection<User> findCommonFriends(Long id, Long idOfFriend);
 
-    Boolean containsUser(Long idOfUser);
+    Boolean contains(Long idOfUser);
 
-    User getUserById(Long id);
+    User findById(Long id);
 
-    void deleteUserById(Long id);
+    void deleteById(Long id);
 
-    Collection<FeedEntity> getFeedOfUser(Long id);
+    Collection<FeedEntity> findFeedOfUser(Long id);
 }
