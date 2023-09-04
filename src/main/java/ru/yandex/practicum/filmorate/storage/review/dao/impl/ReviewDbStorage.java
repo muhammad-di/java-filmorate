@@ -5,12 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 
 import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.FeedEntity;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.review.dao.ReviewStorage;
 
@@ -18,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,6 +80,8 @@ public class ReviewDbStorage implements ReviewStorage {
         this.insertValuesToUserReviewsAndFilmReviews(review.getReviewId(),
                 review.getUserId(), review.getFilmId());
 
+        setFeedEvent(review.getUserId(), review.getReviewId(), Operation.ADD);
+
         return review;
     }
 
@@ -92,6 +99,8 @@ public class ReviewDbStorage implements ReviewStorage {
         if (review.getReviewId() == null) {
             throw new IncorrectParameterException("Review id can't be null.");
         }
+
+        setFeedEntity(review.getReviewId(), Operation.UPDATE);
 
         String sqlQuery = "UPDATE reviews SET" +
                 " content = ?, is_positive = ? WHERE review_id = ?";
@@ -139,6 +148,8 @@ public class ReviewDbStorage implements ReviewStorage {
         if (!reviewIds.contains(id)) {
             throw new ReviewDoesNotExistException("Review does not exist.");
         }
+
+        setFeedEntity(id, Operation.REMOVE);
 
         String sqlQuery = "DELETE FROM reviews WHERE review_id = ?";
 
@@ -300,5 +311,35 @@ public class ReviewDbStorage implements ReviewStorage {
 
         jdbcTemplate.update(insertIntoFilmReviews,
                 filmId, reviewId);
+    }
+
+    /////////////////// GET_FEED_OF_USER --------------------------------------------------------------------------------
+
+    private void setFeedEvent(Long id, Long entityId, Operation operation) {
+        FeedEntity feed = FeedEntity.builder()
+                .userId(id)
+                .entityId(entityId)
+                .eventType(EventType.REVIEW)
+                .operation(operation)
+                .timestamp(Instant.now().toEpochMilli())
+                .build();
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("feed")
+                .usingGeneratedKeyColumns("event_id");
+        simpleJdbcInsert.execute(feed.toMap());
+    }
+
+    private void setFeedEntity(Long reviewId, Operation operation) {
+        String sqlQueryUserId = "SELECT \n" +
+                "                r.user_id  \n" +
+                "                FROM reviews r\n" +
+                "                WHERE\n" +
+                "                r.review_id = ?";
+
+        Long userId = jdbcTemplate.queryForObject(sqlQueryUserId,
+                (rs, rn) -> rs.getLong("user_id"),
+                reviewId);
+
+        setFeedEvent(userId, reviewId, operation);
     }
 }

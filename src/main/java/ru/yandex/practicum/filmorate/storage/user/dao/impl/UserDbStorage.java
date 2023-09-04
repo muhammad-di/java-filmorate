@@ -6,17 +6,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.FeedEntity;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.dao.UserStorage;
 
+import java.sql.*;
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -106,10 +109,11 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriend(Long id, Long idOfFriend) {
-        String sqlQuery = "INSERT INTO friends (USER_ID, FRIEND_ID) " +
+        String sqlQuery = "INSERT INTO friends (user_id, friend_id) " +
                 "VALUES (?, ?)";
 
         jdbcTemplate.update(sqlQuery, id, idOfFriend);
+        setFeedEvent(id, idOfFriend, Operation.ADD);
     }
 
     @Override
@@ -121,6 +125,8 @@ public class UserDbStorage implements UserStorage {
                 "FRIEND_ID = ?";
 
         jdbcTemplate.update(sqlQuery, id, idOfFriend);
+        setFeedEvent(id, idOfFriend, Operation.REMOVE);
+
     }
 
     @Override
@@ -172,6 +178,20 @@ public class UserDbStorage implements UserStorage {
 
         jdbcTemplate.update(sqlQuery, id);
         log.info("Пользователь с идентификатором {} удален.", id);
+    }
+
+    public Collection<FeedEntity> getFeedOfUser(Long id) {
+        String sqlQuery = "SELECT \n" +
+                "f.event_id,\n" +
+                "f.user_id,\n" +
+                "f.entity_id,\n" +
+                "f.event_type,\n" +
+                "f.operation,\n" +
+                "f.EVENT_TIMESTAMP \n" +
+                "FROM feed f\n" +
+                "WHERE f.user_id = ?";
+
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFeed, id);
     }
 
     // helpers methods for a CREATE method------------------------------------------------------------------------------
@@ -292,5 +312,39 @@ public class UserDbStorage implements UserStorage {
                 "FRIEND_ID = ?";
 
         friends.forEach((key, value) -> jdbcTemplate.update(sqlQuery, value, user.getId(), key));
+    }
+
+    // helpers methods for a GET_FEED_OF_USER method--------------------------------------------------------------------
+
+    private FeedEntity mapRowToFeed(ResultSet rs, Integer rowNum) throws SQLException {
+        Long eventId = rs.getLong("event_id");
+        Long userId = rs.getLong("user_id");
+        Long entityId = rs.getLong("entity_id");
+        Long timestamp = rs.getLong("event_timestamp");
+        EventType eventType = EventType.valueOf(rs.getString("event_type"));
+        Operation operation = Operation.valueOf(rs.getString("operation"));
+
+        return FeedEntity.builder()
+                .eventId(eventId)
+                .userId(userId)
+                .entityId(entityId)
+                .eventType(eventType)
+                .operation(operation)
+                .timestamp(timestamp)
+                .build();
+    }
+
+    private void setFeedEvent(Long id, Long entityId, Operation operation) {
+        FeedEntity feed = FeedEntity.builder()
+                .userId(id)
+                .entityId(entityId)
+                .eventType(EventType.FRIEND)
+                .operation(operation)
+                .timestamp(Instant.now().toEpochMilli())
+                .build();
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("feed")
+                .usingGeneratedKeyColumns("event_id");
+        simpleJdbcInsert.execute(feed.toMap());
     }
 }
