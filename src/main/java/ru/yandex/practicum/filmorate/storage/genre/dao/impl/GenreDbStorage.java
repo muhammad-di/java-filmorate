@@ -10,8 +10,7 @@ import ru.yandex.practicum.filmorate.storage.genre.dao.GenreStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 
 @Slf4j
@@ -26,18 +25,16 @@ public class GenreDbStorage implements GenreStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-
     @Override
-    public List<Genre> findAll() {
+    public Collection<Genre> findAll() {
         String sqlQuery = "SELECT\n" +
-                "g.GENRE_ID,\n" +
-                "g.NAME\n" +
-                "FROM GENRE g\n" +
-                "ORDER BY GENRE_ID ASC";
+                "          g.genre_id,\n" +
+                "          g.name\n" +
+                "          FROM genre g\n" +
+                "          ORDER BY genre_id ASC";
 
-        return jdbcTemplate.query(sqlQuery, this::makeGenreList);
+        return jdbcTemplate.query(sqlQuery, this::mapRowToGenre);
     }
-
 
     @Override
     public Boolean containsGenre(Integer idOfGenre) {
@@ -49,26 +46,15 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     public Genre getGenreById(Integer id) {
         String sqlQuery = "SELECT\n" +
-                "g.GENRE_ID,\n" +
-                "g.NAME\n" +
-                "FROM GENRE g\n" +
-                "WHERE g.GENRE_ID = ?";
+                "          g.genre_id,\n" +
+                "          g.name\n" +
+                "          FROM genre g\n" +
+                "          WHERE g.genre_id = ?";
 
-        return jdbcTemplate.queryForObject(sqlQuery, this::makeGenre, id);
+        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToGenre, id);
     }
 
-    private List<Genre> makeGenreList(ResultSet rs) throws SQLException {
-        List<Genre> genreList = new ArrayList<>();
-
-        while (rs.next()) {
-            Genre genre = makeGenre(rs);
-            genreList.add(genre);
-        }
-
-        return genreList;
-    }
-
-    private Genre makeGenre(ResultSet rs, Integer... rn) throws SQLException {
+    private Genre mapRowToGenre(ResultSet rs, Integer rn) throws SQLException {
         Integer genreId = rs.getInt("GENRE_ID");
         String genreName = rs.getString("NAME");
         return new Genre(genreId, genreName);

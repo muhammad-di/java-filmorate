@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 
@@ -18,7 +16,6 @@ import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.review.dao.ReviewStorage;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -38,7 +35,7 @@ public class ReviewDbStorage implements ReviewStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public Review makeReview(ResultSet resultSet, int rowNum) throws SQLException {
+    public Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
         return Review.builder()
                 .reviewId(resultSet.getLong("review_id"))
                 .content(resultSet.getString("content"))
@@ -49,7 +46,7 @@ public class ReviewDbStorage implements ReviewStorage {
                 .build();
     }
 
-    public Long makeUserIds(ResultSet resultSet, int rowNum) throws SQLException {
+    public Long mapRowToUserId(ResultSet resultSet, int rowNum) throws SQLException {
         return resultSet.getLong("user_id");
     }
 
@@ -60,22 +57,13 @@ public class ReviewDbStorage implements ReviewStorage {
 
         this.reviewIsValid(review);
 
-        String sqlQuery = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) " +
-                "VALUES (?, ?, ?, ?, ?)";
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("reviews")
+                .usingGeneratedKeyColumns("review_id");
 
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        Long reviewId = simpleJdbcInsert.executeAndReturnKey(review.toMap()).longValue();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"review_id"});
-            stmt.setString(1, review.getContent());
-            stmt.setBoolean(2, review.getIsPositive());
-            stmt.setLong(3, review.getUserId());
-            stmt.setLong(4, review.getFilmId());
-            stmt.setLong(5, review.getUseful());
-            return stmt;
-        }, keyHolder);
-
-        review.setReviewId(keyHolder.getKey().longValue());
+        review.setReviewId(reviewId);
 
         this.insertValuesToUserReviewsAndFilmReviews(review.getReviewId(),
                 review.getUserId(), review.getFilmId());
@@ -102,8 +90,9 @@ public class ReviewDbStorage implements ReviewStorage {
 
         setFeedEntity(review.getReviewId(), Operation.UPDATE);
 
-        String sqlQuery = "UPDATE reviews SET" +
-                " content = ?, is_positive = ? WHERE review_id = ?";
+        String sqlQuery = "UPDATE reviews " +
+                "          SET content = ?, is_positive = ? " +
+                "          WHERE review_id = ?";
 
         jdbcTemplate.update(sqlQuery,
                 review.getContent(),
@@ -176,14 +165,14 @@ public class ReviewDbStorage implements ReviewStorage {
 
         if (filmId != null && count != null) {
             return jdbcTemplate.query(getAllReviewsByFilmIdAndCount,
-                    this::makeReview);
+                    this::mapRowToReview);
         }
 
         if (filmId != null) {
-            return jdbcTemplate.query(getAllReviewsByFilmId, this::makeReview);
+            return jdbcTemplate.query(getAllReviewsByFilmId, this::mapRowToReview);
         }
 
-        return jdbcTemplate.query(getAllReviews, this::makeReview);
+        return jdbcTemplate.query(getAllReviews, this::mapRowToReview);
     }
 
     @Override
@@ -231,7 +220,7 @@ public class ReviewDbStorage implements ReviewStorage {
     public List<Review> getAllReviews() {
         String sqlQuery = "SELECT * FROM reviews";
 
-        return jdbcTemplate.query(sqlQuery, this::makeReview);
+        return jdbcTemplate.query(sqlQuery, this::mapRowToReview);
     }
 
     public Boolean reviewIsValid(Review review)
@@ -253,14 +242,14 @@ public class ReviewDbStorage implements ReviewStorage {
 
     public void insertValuesToReviewsLikes(Long reviewId, Long userId) {
         String sqlQuery = "INSERT INTO reviews_likes (review_id, user_id)" +
-                " VALUES (?, ?)";
+                "          VALUES (?, ?)";
 
         jdbcTemplate.update(sqlQuery, reviewId, userId);
     }
 
     public void insertValuesToReviewsDislikes(Long reviewId, Long userId) {
         String sqlQuery = "INSERT INTO reviews_dislikes (review_id, user_id)" +
-                " VALUES (?, ?)";
+                "          VALUES (?, ?)";
 
         jdbcTemplate.update(sqlQuery, reviewId, userId);
     }
@@ -280,7 +269,7 @@ public class ReviewDbStorage implements ReviewStorage {
     public boolean hasUserLikedReview(Long reviewId, Long userId) {
         String sqlQuery = "SELECT user_id FROM reviews_likes WHERE review_id = " + reviewId;
 
-        List<Long> userIds = jdbcTemplate.query(sqlQuery, this::makeUserIds);
+        List<Long> userIds = jdbcTemplate.query(sqlQuery, this::mapRowToUserId);
 
         if (userIds.contains(userId)) {
             return true;
@@ -291,7 +280,7 @@ public class ReviewDbStorage implements ReviewStorage {
     public boolean hasUserDislikedReview(Long reviewId, Long userId) {
         String sqlQuery = "SELECT user_id FROM reviews_dislikes WHERE review_id = " + reviewId;
 
-        List<Long> userIds = jdbcTemplate.query(sqlQuery, this::makeUserIds);
+        List<Long> userIds = jdbcTemplate.query(sqlQuery, this::mapRowToUserId);
 
         if (userIds.contains(userId)) {
             return true;
@@ -301,10 +290,10 @@ public class ReviewDbStorage implements ReviewStorage {
 
     public void insertValuesToUserReviewsAndFilmReviews(Long reviewId, Long userId, Long filmId) {
         String insertIntoUserReviews = "INSERT INTO user_review (user_id, review_id)" +
-                "VALUES (?, ?)";
+                "                       VALUES (?, ?)";
 
         String insertIntoFilmReviews = "INSERT INTO film_review (film_id, review_id) " +
-                "VALUES (?, ?)";
+                "                       VALUES (?, ?)";
 
         jdbcTemplate.update(insertIntoUserReviews,
                 userId, reviewId);

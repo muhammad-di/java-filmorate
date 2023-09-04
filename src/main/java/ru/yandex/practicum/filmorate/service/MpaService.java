@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.exception.MpaDoesNotExistException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.mpa.dao.MpaStorage;
 
-import java.util.List;
+import java.util.Collection;
 
 @Slf4j
 @Service
@@ -19,7 +19,7 @@ public class MpaService {
         this.storage = storage;
     }
 
-    public List<Mpa> findAll() {
+    public Collection<Mpa> findAll() {
         return storage.findAll();
     }
 

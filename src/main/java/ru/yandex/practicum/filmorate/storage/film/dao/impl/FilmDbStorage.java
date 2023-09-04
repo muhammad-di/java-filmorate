@@ -36,17 +36,17 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> findAll() {
         String sqlQuery = "SELECT\n" +
-                "f.FILM_ID,\n" +
-                "f.NAME,\n" +
-                "f.RELEASE_DATE,\n" +
-                "f.DURATION,\n" +
-                "f.DESCRIPTION,\n" +
-                "f.MPA AS RATING_ID,\n" +
-                "m.NAME AS RATING_NAME\n" +
-                "FROM film f\n" +
-                "INNER JOIN MPA m ON f.MPA = m.RATING_ID";
+                "          f.film_id,\n" +
+                "          f.name,\n" +
+                "          f.release_date,\n" +
+                "          f.duration,\n" +
+                "          f.description,\n" +
+                "          f.mpa AS rating_id,\n" +
+                "          m.name AS rating_name\n" +
+                "          FROM film f\n" +
+                "          INNER JOIN mpa m ON f.mpa = m.rating_id";
 
-        return jdbcTemplate.query(sqlQuery, this::makeFilmList);
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
     }
 
     @Override
@@ -62,19 +62,19 @@ public class FilmDbStorage implements FilmStorage {
         setRating(film);
         setDirector(film);
 
-        return film;
+        return getFilmById(film.getId());
     }
 
     @Override
     public Film update(Film film) {
-        String sqlQuery = "UPDATE FILM SET \n" +
-                "NAME = ?,\n" +
-                "RELEASE_DATE = ?,\n" +
-                "DURATION = ?,\n" +
-                "DESCRIPTION = ?, \n" +
-                "MPA = ? \n" +
+        String sqlQuery = "UPDATE film SET \n" +
+                "name = ?,\n" +
+                "release_date = ?,\n" +
+                "duration = ?,\n" +
+                "description = ?, \n" +
+                "mpa = ? \n" +
                 "WHERE \n" +
-                "FILM_ID = ?";
+                "film_id = ?";
 
         jdbcTemplate.update(sqlQuery,
                 film.getName(),
@@ -92,7 +92,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addLike(Long idOfFilm, Long idOfUser) {
-        String sqlQuery = "INSERT INTO likes (FILM_ID, USER_ID) " +
+        String sqlQuery = "INSERT INTO likes (film_id, user_id) " +
                 "VALUES (?, ?)";
 
         jdbcTemplate.update(sqlQuery, idOfFilm, idOfUser);
@@ -103,9 +103,9 @@ public class FilmDbStorage implements FilmStorage {
     public void deleteLike(Long idOfFilm, Long idOfUser) {
         String sqlQuery = "DELETE FROM likes " +
                 "WHERE " +
-                "FILM_ID = ? " +
+                "film_id = ? " +
                 "AND " +
-                "USER_ID = ?";
+                "user_id = ?";
 
         jdbcTemplate.update(sqlQuery, idOfFilm, idOfUser);
         setFeedEvent(idOfUser, idOfFilm, Operation.REMOVE);
@@ -113,66 +113,85 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
-        String sqlQuery = "SELECT t.film_id,\n" +
-                "t.name,\n" +
-                "t.description,\n" +
-                "t.release_date, \n" +
-                "t.duration, \n" +
-                "t.RATING_ID,\n" +
-                "t.RATING_NAME \n" +
-                "FROM \n" +
-                "(SELECT f.film_id, \n" +
-                "f.name, \n" +
-                "f.description, \n" +
-                "f.release_date, \n" +
-                "f.duration, \n" +
-                "f.mpa AS RATING_ID, \n" +
-                "m.NAME AS RATING_NAME \n" +
-                "FROM film AS f \n" +
-                "JOIN MPA m ON f.MPA = m.RATING_ID) AS t \n" +
-                "LEFT JOIN likes AS l ON t.film_id = l.film_id \n" +
-                "LEFT JOIN FILM_GENRE AS fg ON t.film_id = fg.FILM_ID \n";
+        String sqlQuery = "SELECT " +
+                "          t.film_id,\n" +
+                "          t.name,\n" +
+                "          t.description,\n" +
+                "          t.release_date, \n" +
+                "          t.duration, \n" +
+                "          t.rating_id,\n" +
+                "          t.rating_name \n" +
+                "          FROM \n" +
+                "          (" +
+                "               SELECT" +
+                "               f.film_id, \n" +
+                "               f.name, \n" +
+                "               f.description, \n" +
+                "               f.release_date, \n" +
+                "               f.duration, \n" +
+                "               f.mpa AS rating_id, \n" +
+                "               m.name AS rating_name \n" +
+                "               FROM film AS f \n" +
+                "               JOIN mpa m ON f.mpa = m.rating_id" +
+                "          ) AS t \n" +
+                "          LEFT JOIN likes AS l ON t.film_id = l.film_id \n" +
+                "          LEFT JOIN film_genre AS fg ON t.film_id = fg.film_id \n";
         if (genreId == null && year == null) {
             sqlQuery = sqlQuery + "GROUP BY t.film_id \n" +
-                    "ORDER BY COUNT(l.user_id) DESC \n" +
-                    "LIMIT ?;";
-            return jdbcTemplate.query(sqlQuery, this::makeFilmList, count);
+                    "              ORDER BY COUNT(l.user_id) DESC \n" +
+                    "              LIMIT ?;";
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count);
         } else if (genreId != null && year == null) {
-            sqlQuery = sqlQuery + "WHERE fg.GENRE_ID = ? \n" +
-                    "GROUP BY t.film_id \n" +
-                    "ORDER BY COUNT(l.user_id) DESC \n" +
-                    "LIMIT ?;";
-            return jdbcTemplate.query(sqlQuery, this::makeFilmList, genreId, count);
+            sqlQuery = sqlQuery + "WHERE fg.genre_id = ? \n" +
+                    "              GROUP BY t.film_id \n" +
+                    "              ORDER BY COUNT(l.user_id) DESC \n" +
+                    "              LIMIT ?;";
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, count);
         } else if (genreId == null && year != null) {
-            sqlQuery = sqlQuery + "WHERE EXTRACT(YEAR FROM CAST(t.release_date AS date)) = ?\n" +
-                    "GROUP BY t.film_id \n" +
-                    "ORDER BY COUNT(l.user_id) DESC \n" +
-                    "LIMIT ?;";
-            return jdbcTemplate.query(sqlQuery, this::makeFilmList, year, count);
+            sqlQuery = sqlQuery + "WHERE EXTRACT(YEAR FROM CAST(t.release_date AS DATE)) = ?\n" +
+                    "              GROUP BY t.film_id \n" +
+                    "              ORDER BY COUNT(l.user_id) DESC \n" +
+                    "              LIMIT ?;";
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, year, count);
         } else {
-            sqlQuery = sqlQuery + "WHERE fg.GENRE_ID = ? AND \n" +
-                    "EXTRACT(YEAR FROM CAST(t.release_date AS date)) = ?\n" +
-                    "GROUP BY t.film_id \n" +
-                    "ORDER BY COUNT(l.user_id) DESC \n" +
-                    "LIMIT ?;";
-            return jdbcTemplate.query(sqlQuery, this::makeFilmList, genreId, year, count);
+            sqlQuery = sqlQuery + "WHERE fg.genre_id = ? AND \n" +
+                    "              EXTRACT(YEAR FROM CAST(t.release_date AS DATE)) = ?\n" +
+                    "              GROUP BY t.film_id \n" +
+                    "              ORDER BY COUNT(l.user_id) DESC \n" +
+                    "              LIMIT ?;";
+            return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, year, count);
         }
     }
 
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        final String qs = "select count(l.USER_ID) as counter, req.film_id, name, release_date, duration, description, RATING_ID, RATING_NAME\n" +
-                "from (\n" +
-                "select count(l.USER_ID), f.film_id, f.name, f.release_date, f.duration, description, mpa.RATING_ID as RATING_ID, mpa.NAME as RATING_NAME\n" +
-                "         from FILM f\n" +
-                "         join MPA on mpa.RATING_ID = f.MPA\n" +
-                "         join LIKES l on f.FILM_ID = l.FILM_ID\n" +
-                "         where l.USER_ID in (?, ?)\n" +
-                "         group by f.FILM_ID having count(l.USER_ID) > 1) as req\n" +
-                "join LIKES l on l.FILM_ID = req.FILM_ID\n" +
-                "group by req.FILM_ID order by counter desc;";
+        final String qs = "SELECT" +
+                "          COUNT(l.user_id) AS counter," +
+                "          req.film_id, name," +
+                "          release_date, duration," +
+                "          description, rating_id," +
+                "          rating_name\n" +
+                "          FROM " +
+                "          (\n" +
+                "               SELECT COUNT(l.user_id)," +
+                "               f.film_id," +
+                "               f.name," +
+                "               f.release_date," +
+                "               f.duration, description," +
+                "               mpa.rating_id AS rating_id," +
+                "               mpa.name AS rating_name\n" +
+                "               FROM film f\n" +
+                "               JOIN mpa ON mpa.rating_id = f.mpa\n" +
+                "               JOIN likes l ON f.film_id = l.film_id\n" +
+                "               WHERE l.user_id in (?, ?)\n" +
+                "               GROUP BY f.film_id " +
+                "               HAVING COUNT(l.user_id) > 1" +
+                "          ) AS req\n" +
+                "          JOIN likes l ON l.film_id = req.film_id\n" +
+                "          GROUP BY req.film_id" +
+                "          ORDER BY counter DESC;";
 
         try {
-            return jdbcTemplate.query(qs, this::makeFilmList, userId, friendId);
+            return jdbcTemplate.query(qs, this::mapRowToFilm, userId, friendId);
         } catch (DataAccessException e) {
             throw new FilmNotFoundException("Фильм не найден");
         }
@@ -188,25 +207,25 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film getFilmById(Long id) {
         String sqlQuery = "SELECT\n" +
-                "f.FILM_ID,\n" +
-                "f.NAME,\n" +
-                "f.RELEASE_DATE,\n" +
-                "f.DURATION,\n" +
-                "f.DESCRIPTION,\n" +
-                "f.MPA AS RATING_ID,\n" +
-                "m.NAME AS RATING_NAME\n" +
-                "FROM film AS f\n" +
-                "INNER JOIN MPA m ON f.MPA = m.RATING_ID\n" +
-                "WHERE f.FILM_ID = ?";
+                "          f.film_id,\n" +
+                "          f.name,\n" +
+                "          f.release_date,\n" +
+                "          f.duration,\n" +
+                "          f.description,\n" +
+                "          f.mpa AS rating_id,\n" +
+                "          m.name AS rating_name\n" +
+                "          FROM film AS f\n" +
+                "          INNER JOIN mpa m ON f.mpa = m.rating_id\n" +
+                "          WHERE f.film_id = ?";
 
-        return jdbcTemplate.queryForObject(sqlQuery, this::makeFilm, id);
+        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, id);
     }
 
     @Override
     public Set<Long> getIdLikedFilmsByUser(Long id) {
         String sqlQuery = "SELECT film_id " +
-                "FROM likes " +
-                "WHERE user_id = ?";
+                "          FROM likes " +
+                "          WHERE user_id = ?";
 
         SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
         Set<Long> likes = new HashSet<>();
@@ -219,8 +238,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public void deleteFilmById(Long id) {
         String sqlQuery = "DELETE FROM film " +
-                "WHERE " +
-                "FILM_ID = ?";
+                "          WHERE film_id = ?";
 
         jdbcTemplate.update(sqlQuery, id);
         log.info("Фильм с идентификатором {} удален.", id);
@@ -230,24 +248,38 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getFilmBySearchByTitleOrDirector(String title, boolean isDirectorCheck, boolean isTitleCheck) {
         List<String> params = new ArrayList<>();
         title = "%".concat(title).concat("%");
-        String qs = "select distinct count(l.USER_ID)  as likes, f.film_id, f.name, f.release_date, f.duration, description, mpa.RATING_ID as RATING_ID, mpa.NAME as RATING_NAME from FILM as f join MPA on mpa.RATING_ID = f.MPA left join LIKES l on f.FILM_ID = l.FILM_ID";
+        String qs = "SELECT " +
+                "    DISTINCT COUNT(l.user_id)  AS likes, " +
+                "    f.film_id, " +
+                "    f.name, " +
+                "    f.release_date, " +
+                "    f.duration, " +
+                "    description, " +
+                "    mpa.rating_id AS rating_id, " +
+                "    mpa.name AS rating_name " +
+                "    FROM film AS f " +
+                "    JOIN mpa ON mpa.rating_id = f.mpa  " +
+                "    LEFT JOIN likes l ON f.film_id = l.film_id";
         if (isDirectorCheck) {
-            qs = qs.concat(" left join FILM_DIRECTOR as fd on f.FILM_ID = fd.FILM_ID left join DIRECTOR as d on d.DIRECTOR_ID = fd.DIRECTOR_ID where LOWER(d.NAME) like LOWER(?)");
+            qs = qs.concat(" LEFT JOIN film_director AS fd ON f.film_id = fd.film_id " +
+                    "             LEFT JOIN director AS d ON d.director_id = fd.director_id " +
+                    "             WHERE LOWER(d.name) like LOWER(?)");
             params.add(title);
         }
         if (isTitleCheck) {
             params.add(title);
             if (!isDirectorCheck) {
-                qs = qs.concat(" where LOWER(f.NAME) like LOWER(?)");
+                qs = qs.concat(" WHERE LOWER(f.name) like LOWER(?)");
             } else {
-                qs = qs.concat(" or LOWER(f.NAME) like LOWER(?)");
+                qs = qs.concat(" OR LOWER(f.name) like LOWER(?)");
             }
         }
-        qs = qs.concat(" group by f.FILM_ID order by count(l.USER_ID) desc;");
+        qs = qs.concat(" GROUP BY f.film_id" +
+                "             ORDER BY COUNT(l.user_id) DESC;");
 
         try {
             log.info("qs = " + qs);
-            return jdbcTemplate.query(qs, this::makeFilmList, params.toArray());
+            return jdbcTemplate.query(qs, this::mapRowToFilm, params.toArray());
         } catch (DataAccessException e) {
             throw new FilmNotFoundException("Фильм не найден");
         }
@@ -256,35 +288,46 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> getFilmsWithDirectorIdSortedByLikes(Long directorId) {
         String sqlQueryWhenLikesArePresent = "SELECT\n" +
-                "f.film_id,\n" +
-                "f.name,\n" +
-                "f.release_date,\n" +
-                "f.duration,\n" +
-                "f.description,\n" +
-                "f.mpa rating_id,\n" +
-                "m.name rating_name,\n" +
-                "COUNT(l.film_id)\n" +
-                "FROM film f\n" +
-                "JOIN likes l ON l.film_id = f.film_id\n" +
-                "JOIN mpa m ON f.mpa = m.rating_id\n" +
-                "GROUP BY  l.film_id\n" +
-                "HAVING f.film_id IN (SELECT film_id FROM film_director WHERE director_id = ?)\n" +
-                "ORDER BY  COUNT(l.film_id) DESC";
-        String sqlQueryWhenLikesAbsent = "SELECT\n" +
-                "f.film_id,\n" +
-                "f.name,\n" +
-                "f.release_date,\n" +
-                "f.duration,\n" +
-                "f.description,\n" +
-                "f.mpa rating_id,\n" +
-                "m.name rating_name\n" +
-                "FROM film f\n" +
-                "JOIN mpa m ON f.mpa = m.rating_id\n" +
-                "WHERE f.film_id IN (SELECT film_id FROM film_director WHERE director_id = ?)";
+                "                             f.film_id,\n" +
+                "                             f.name,\n" +
+                "                             f.release_date,\n" +
+                "                             f.duration,\n" +
+                "                             f.description,\n" +
+                "                             f.mpa rating_id,\n" +
+                "                             m.name rating_name,\n" +
+                "                             COUNT(l.film_id)\n" +
+                "                             FROM film f\n" +
+                "                             JOIN likes l ON l.film_id = f.film_id\n" +
+                "                             JOIN mpa m ON f.mpa = m.rating_id\n" +
+                "                             GROUP BY l.film_id\n" +
+                "                             HAVING f.film_id IN " +
+                "                             (" +
+                "                                  SELECT film_id" +
+                "                                  FROM film_director " +
+                "                                  WHERE director_id = ?" +
+                "                             )\n" +
+                "                             ORDER BY COUNT(l.film_id) DESC";
 
-        Collection<Film> list = jdbcTemplate.query(sqlQueryWhenLikesArePresent, this::makeFilmList, directorId);
+        String sqlQueryWhenLikesAbsent = "    SELECT\n" +
+                "                             f.film_id,\n" +
+                "                             f.name,\n" +
+                "                             f.release_date,\n" +
+                "                             f.duration,\n" +
+                "                             f.description,\n" +
+                "                             f.mpa rating_id,\n" +
+                "                             m.name rating_name\n" +
+                "                             FROM film f\n" +
+                "                             JOIN mpa m ON f.mpa = m.rating_id\n" +
+                "                             WHERE f.film_id IN " +
+                "                             (" +
+                "                                  SELECT film_id " +
+                "                                  FROM film_director " +
+                "                                  WHERE director_id = ?" +
+                "                             )";
+
+        Collection<Film> list = jdbcTemplate.query(sqlQueryWhenLikesArePresent, this::mapRowToFilm, directorId);
         if (CollectionUtils.isEmpty(list)) {
-            list = jdbcTemplate.query(sqlQueryWhenLikesAbsent, this::makeFilmList, directorId);
+            list = jdbcTemplate.query(sqlQueryWhenLikesAbsent, this::mapRowToFilm, directorId);
         }
 
         return list;
@@ -293,45 +336,41 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Collection<Film> getFilmsWithDirectorIdSortedByYear(Long directorId) {
         String sqlQuery = "SELECT\n" +
-                "f.film_id,\n" +
-                "f.name,\n" +
-                "f.release_date,\n" +
-                "f.duration,\n" +
-                "f.description,\n" +
-                "f.mpa rating_id,\n" +
-                "m.name rating_name,\n" +
-                "EXTRACT(\n" +
-                "YEAR \n" +
-                "    FROM\n" +
-                "    CAST(release_date AS date)\n" +
-                ") as the_year\n" +
-                "FROM film f\n" +
-                "JOIN mpa m ON f.mpa = m.rating_id\n" +
-                "WHERE  f.film_id IN (SELECT film_id FROM film_director WHERE director_id = ?)\n" +
-                "ORDER BY the_year";
+                "          f.film_id,\n" +
+                "          f.name,\n" +
+                "          f.release_date,\n" +
+                "          f.duration,\n" +
+                "          f.description,\n" +
+                "          f.mpa rating_id,\n" +
+                "          m.name rating_name,\n" +
+                "          EXTRACT(YEAR FROM CAST(release_date AS DATE)) AS the_year\n" +
+                "          FROM film f\n" +
+                "          JOIN mpa m ON f.mpa = m.rating_id\n" +
+                "          WHERE f.film_id IN (SELECT film_id FROM film_director WHERE director_id = ?)\n" +
+                "          ORDER BY the_year";
 
-        return jdbcTemplate.query(sqlQuery, this::makeFilmList, directorId);
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, directorId);
     }
 
     // helpers methods for a CREATE method------------------------------------------------------------------------------
 
-    private List<Film> makeFilmList(ResultSet rs) throws SQLException, DataAccessException {
-        List<Film> filmList = new ArrayList<>();
+//    private List<Film> makeFilmList(ResultSet rs) throws SQLException, DataAccessException {
+//        List<Film> filmList = new ArrayList<>();
+//
+//        while (rs.next()) {
+//            filmList.add(makeFilm(rs));
+//        }
+//        return filmList;
+//    }
 
-        while (rs.next()) {
-            filmList.add(makeFilm(rs));
-        }
-        return filmList;
-    }
-
-    private Film makeFilm(ResultSet rs, Integer... rowNum) throws SQLException {
-        long id = rs.getLong("FILM_ID");
-        String name = rs.getString("NAME");
-        LocalDate releaseDate = rs.getDate("RELEASE_DATE").toLocalDate();
-        long duration = rs.getLong("DURATION");
-        String description = rs.getString("DESCRIPTION");
-        Integer mpaId = rs.getInt("RATING_ID");
-        String ratingName = rs.getString("RATING_NAME");
+    private Film mapRowToFilm(ResultSet rs, Integer rowNum) throws SQLException {
+        long id = rs.getLong("film_id");
+        String name = rs.getString("name");
+        LocalDate releaseDate = rs.getDate("release_date").toLocalDate();
+        long duration = rs.getLong("duration");
+        String description = rs.getString("description");
+        Integer mpaId = rs.getInt("rating_id");
+        String ratingName = rs.getString("rating_name");
         Set<Long> likes = makeLikesSet(id);
         List<Genre> genre = makeGenreList(id);
         Collection<Director> directors = getDirectors(id);
@@ -356,16 +395,16 @@ public class FilmDbStorage implements FilmStorage {
 
     private Set<Long> makeLikesSet(long id) {
         String sqlQuery = "SELECT\n" +
-                "l.USER_ID\n" +
-                "FROM film AS f\n" +
-                "INNER JOIN likes AS l ON l.film_id = f.film_id\n" +
-                "WHERE f.FILM_ID = ?";
+                "          l.user_id\n" +
+                "          FROM film AS f\n" +
+                "          INNER JOIN likes AS l ON l.film_id = f.film_id\n" +
+                "          WHERE f.film_id = ?";
 
         return jdbcTemplate.query(sqlQuery, rs -> {
             Set<Long> setOfId = new HashSet<>();
 
             while (rs.next()) {
-                Long userId = rs.getLong("USER_ID");
+                Long userId = rs.getLong("user_id");
                 setOfId.add(userId);
             }
             return setOfId;
@@ -377,8 +416,8 @@ public class FilmDbStorage implements FilmStorage {
             film.setLikes(Collections.emptySet());
             return;
         }
-        String sqlQuery = "INSERT INTO likes (FILM_ID, USER_ID) " +
-                "VALUES (?, ?)";
+        String sqlQuery = "INSERT INTO likes (film_id, user_id) " +
+                "          VALUES (?, ?)";
 
         film.getLikes().forEach(userId -> jdbcTemplate.update(sqlQuery, film.getId(), userId));
     }
@@ -387,19 +426,19 @@ public class FilmDbStorage implements FilmStorage {
 
     private List<Genre> makeGenreList(long id) {
         String sqlQuery = "SELECT\n" +
-                "g.NAME AS GENRE_NAME,\n" +
-                "g.GENRE_ID AS ID\n" +
-                "FROM film AS f\n" +
-                "INNER JOIN film_genre AS fm ON f.film_id = fm.film_id\n" +
-                "INNER JOIN genre AS g ON g.genre_id = fm.genre_id\n" +
-                "WHERE f.FILM_ID = ?";
+                "          g.name AS genre_name,\n" +
+                "          g.genre_id AS id\n" +
+                "          FROM film AS f\n" +
+                "          INNER JOIN film_genre AS fm ON f.film_id = fm.film_id\n" +
+                "          INNER JOIN genre AS g ON g.genre_id = fm.genre_id\n" +
+                "          WHERE f.film_id = ?";
 
         return jdbcTemplate.query(sqlQuery, rs -> {
             List<Genre> listOfGenre = new ArrayList<>();
 
             while (rs.next()) {
-                Integer genreId = rs.getInt("ID");
-                String genreName = rs.getString("GENRE_NAME");
+                Integer genreId = rs.getInt("id");
+                String genreName = rs.getString("genre_name");
                 Genre genre = new Genre(genreId, genreName);
                 listOfGenre.add(genre);
             }
@@ -409,7 +448,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private String getName(String sqlQuery, Long id) {
         return jdbcTemplate.queryForObject(sqlQuery,
-                (rs, rn) -> rs.getString("NAME"), id);
+                (rs, rn) -> rs.getString("name"), id);
     }
 
     /////////////////// CREATE RATING ----------------------------------------------------------------------------------
@@ -425,10 +464,9 @@ public class FilmDbStorage implements FilmStorage {
 
     private String getRatingName(Film film) {
         String sqlQuery = "SELECT\n" +
-                "m.NAME\n" +
-                "FROM MPA m\n" +
-                "WHERE\n" +
-                "m.RATING_ID = ?";
+                "          m.name\n" +
+                "          FROM mpa m\n" +
+                "          WHERE m.rating_id = ?";
 
         return getName(sqlQuery, (long) film.getMpa().getId());
     }
@@ -438,18 +476,17 @@ public class FilmDbStorage implements FilmStorage {
     private Collection<Director> setDirectorsNames(Film film) {
         return film.getDirectors()
                 .stream()
-                .map(director -> {
+                .peek(director -> {
                     String name = getDirectorName(director);
                     director.setName(name);
-                    return director;
                 }).collect(Collectors.toList());
     }
 
     private String getDirectorName(Director director) {
         String sqlQuery = "SELECT \n" +
-                "d.name\n" +
-                "FROM director d\n" +
-                "WHERE d.director_id = ?";
+                "          d.name\n" +
+                "          FROM director d\n" +
+                "          WHERE d.director_id = ?";
 
         return getName(sqlQuery, director.getId());
     }
@@ -459,9 +496,8 @@ public class FilmDbStorage implements FilmStorage {
             return;
         }
         Collection<Director> directors = setDirectorsNames(film);
-        String sqlQuery = "INSERT INTO film_director\n" +
-                "(film_id, director_id)\n" +
-                "VALUES (?, ?)";
+        String sqlQuery = "INSERT INTO film_director (film_id, director_id)\n" +
+                "          VALUES (?, ?)";
 
         film.setDirectors(directors);
         directors.forEach(director -> jdbcTemplate.update(sqlQuery, film.getId(), director.getId()));
@@ -494,14 +530,15 @@ public class FilmDbStorage implements FilmStorage {
 
     private Set<Long> getLikes(Film film) {
         String sqlQuery = "SELECT \n" +
-                "USER_ID\n" +
-                "FROM\n" +
-                "LIKES\n" +
-                "WHERE FILM_ID = ?";
+                "          user_id\n" +
+                "          FROM\n" +
+                "          likes\n" +
+                "          WHERE film_id = ?";
+
         return jdbcTemplate.query(sqlQuery, rs -> {
             Set<Long> setOfLikes = new HashSet<>();
             while (rs.next()) {
-                Long userId = rs.getLong("USER_ID");
+                Long userId = rs.getLong("user_id");
                 setOfLikes.add(userId);
             }
             return setOfLikes;
@@ -537,28 +574,23 @@ public class FilmDbStorage implements FilmStorage {
 
     private List<Genre> getGenres(Film film) {
         String sqlQuery = "SELECT\n" +
-                "g.NAME AS GENRE_NAME,\n" +
-                "g.GENRE_ID AS ID\n" +
-                "FROM FILM f \n" +
-                "INNER JOIN FILM_GENRE fg ON fg.FILM_ID = f.FILM_ID\n" +
-                "INNER JOIN GENRE g ON fg.GENRE_ID  = g.GENRE_ID\n" +
-                "WHERE f.FILM_ID  = ?";
+                "          g.name AS genre_name,\n" +
+                "          g.genre_id AS id\n" +
+                "          FROM film f \n" +
+                "          INNER JOIN film_genre fg ON fg.film_id = f.film_id\n" +
+                "          INNER JOIN genre g ON fg.genre_id  = g.genre_id\n" +
+                "          WHERE f.film_id  = ?";
 
-        return jdbcTemplate.query(sqlQuery, rs -> {
-            List<Genre> listOfGenre = new ArrayList<>();
-            while (rs.next()) {
-                Integer genreId = rs.getInt("ID");
-                String genreName = rs.getString("GENRE_NAME");
-                Genre genre = new Genre(genreId, genreName);
-                listOfGenre.add(genre);
-            }
-            return listOfGenre;
+        return jdbcTemplate.query(sqlQuery, (rs, rn) -> {
+            Integer genreId = rs.getInt("id");
+            String genreName = rs.getString("genre_name");
+            return new Genre(genreId, genreName);
         }, film.getId());
     }
 
     private void setGenres(Film film, Collection<Genre> genres) {
-        String sqlQuery = "INSERT INTO film_genre (FILM_ID, GENRE_ID) " +
-                "VALUES (?, ?)";
+        String sqlQuery = "INSERT INTO film_genre (film_id, genre_id) " +
+                "          VALUES (?, ?)";
 
         genres.forEach(genre -> jdbcTemplate.update(sqlQuery, film.getId(), genre.getId()));
     }
@@ -581,10 +613,10 @@ public class FilmDbStorage implements FilmStorage {
 
     private void deleteGenres(Film film, Collection<Genre> genres) {
         String sqlQuery = "DELETE FROM film_genre " +
-                "WHERE " +
-                "FILM_ID = ?\n" +
-                "AND\n" +
-                "GENRE_ID = ? ";
+                "          WHERE " +
+                "          film_id = ?\n" +
+                "          AND\n" +
+                "          genre_id = ? ";
 
         genres.forEach(genre -> jdbcTemplate.update(sqlQuery, film.getId(), genre.getId()));
     }
@@ -620,25 +652,20 @@ public class FilmDbStorage implements FilmStorage {
 
     private Collection<Director> getDirectors(Long filmId) {
         String sqlQuery = "SELECT\n" +
-                "d.director_id,\n" +
-                "d.name\n" +
-                "FROM director d\n" +
-                "INNER JOIN film_director fd ON d.director_id = fd.director_id\n" +
-                "INNER JOIN film f ON f.film_id = fd.film_id\n" +
-                "WHERE f.film_id = ?";
+                "          d.director_id,\n" +
+                "          d.name\n" +
+                "          FROM director d\n" +
+                "          INNER JOIN film_director fd ON d.director_id = fd.director_id\n" +
+                "          INNER JOIN film f ON f.film_id = fd.film_id\n" +
+                "          WHERE f.film_id = ?";
 
-        return jdbcTemplate.query(sqlQuery, rs -> {
-            Collection<Director> setOfDirectors = new HashSet<>();
-            while (rs.next()) {
-                Long id = rs.getLong("director_id");
-                String name = rs.getString("name");
-                Director director = Director.builder()
-                        .id(id)
-                        .name(name)
-                        .build();
-                setOfDirectors.add(director);
-            }
-            return setOfDirectors;
+        return jdbcTemplate.query(sqlQuery, (rs, rn) -> {
+            Long id = rs.getLong("director_id");
+            String name = rs.getString("name");
+            return Director.builder()
+                    .id(id)
+                    .name(name)
+                    .build();
         }, filmId);
     }
 
@@ -653,25 +680,25 @@ public class FilmDbStorage implements FilmStorage {
 
     private void deleteDirectors(Film film) {
         String sqlQuery = "DELETE FROM film_director " +
-                "WHERE " +
-                "film_id = ?";
+                "          WHERE " +
+                "          film_id = ?";
 
         jdbcTemplate.update(sqlQuery, film.getId());
     }
 
     private void addDirector(Long idOfFilm, Long idOfUser) {
         String sqlQuery = "INSERT INTO film_director (film_id, director_id) " +
-                "VALUES (?, ?)";
+                "          VALUES (?, ?)";
 
         jdbcTemplate.update(sqlQuery, idOfFilm, idOfUser);
     }
 
     private void deleteDirector(Long idOfFilm, Long idOfUser) {
         String sqlQuery = "DELETE FROM film_director " +
-                "WHERE " +
-                "film_id = ? " +
-                "AND " +
-                "director_id = ?";
+                "          WHERE " +
+                "          film_id = ? " +
+                "          AND " +
+                "          director_id = ?";
 
         jdbcTemplate.update(sqlQuery, idOfFilm, idOfUser);
     }

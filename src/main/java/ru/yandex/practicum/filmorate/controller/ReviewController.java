@@ -27,8 +27,8 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping
-    public Review createReview(@Valid @RequestBody Review review)
-            throws FilmDoesNotExistException, UserDoesNotExistException, InvalidReviewPropertiesException {
+    public Review createReview(@RequestBody Review review)
+            throws InvalidReviewPropertiesException, FilmDoesNotExistException, UserDoesNotExistException {
         return reviewService.createReview(review);
     }
 
@@ -47,7 +47,7 @@ public class ReviewController {
     }
 
     @PutMapping
-    public Review updateReview(@RequestBody Review review) {
+    public Review updateReview(@Valid @RequestBody Review review) {
         return reviewService.updateReview(review);
     }
 

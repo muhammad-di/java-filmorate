@@ -12,7 +12,7 @@ import java.util.Objects;
 @Builder
 @AllArgsConstructor
 public class Genre {
-    @Min(1)
+    @Min(value = 1, message = "Id should not be less than 1")
     private Integer id;
     private String name;
 

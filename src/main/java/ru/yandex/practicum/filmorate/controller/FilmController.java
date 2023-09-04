@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import javax.validation.Valid;
 import java.util.*;
 
 import static ru.yandex.practicum.filmorate.Constants.*;
@@ -26,13 +27,13 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film)
+    public Film create(@Valid @RequestBody Film film)
             throws InvalidFilmPropertiesException, FilmAlreadyExistException {
         return filmService.create(film);
     }
 
     @PutMapping
-    public Film update(@RequestBody Film film)
+    public Film update(@Valid @RequestBody Film film)
             throws FilmDoesNotExistException, InvalidFilmPropertiesException {
         return filmService.update(film);
     }
@@ -58,7 +59,7 @@ public class FilmController {
     }
 
     @GetMapping("/common")
-    public List<Film> getCommonFilms(
+    public Collection<Film> getCommonFilms(
             @RequestParam Integer userId,
             @RequestParam Integer friendId) {
         return filmService.getCommonFilms(userId, friendId);

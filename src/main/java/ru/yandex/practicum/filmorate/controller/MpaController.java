@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
-import java.util.List;
+import java.util.Collection;
 
 import static ru.yandex.practicum.filmorate.Constants.MIN_ID;
 
@@ -19,7 +19,7 @@ public class MpaController {
     private final MpaService mpaService;
 
     @GetMapping
-    public List<Mpa> findAll() {
+    public Collection<Mpa> findAll() {
         return mpaService.findAll();
     }
 

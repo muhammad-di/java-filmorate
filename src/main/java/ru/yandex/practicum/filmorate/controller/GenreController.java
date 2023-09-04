@@ -11,7 +11,7 @@ import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.GenreService;
 
-import java.util.List;
+import java.util.Collection;
 
 import static ru.yandex.practicum.filmorate.Constants.MIN_ID;
 
@@ -23,7 +23,7 @@ public class GenreController {
     private final GenreService genreService;
 
     @GetMapping
-    public List<Genre> findAll() {
+    public Collection<Genre> findAll() {
         return genreService.findAll();
     }
 

@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -12,11 +15,19 @@ import java.util.Objects;
 @Builder
 @AllArgsConstructor
 public class FeedEntity {
+    @NotNull(message = "timestamp is mandatory")
     private final Long timestamp;
+    @NotNull(message = "eventType is mandatory")
+    @NotBlank(message = "operation can not be blank")
     private final EventType eventType;
+    @NotNull(message = "operation is mandatory")
+    @NotBlank(message = "operation can not be blank")
     private final Operation operation;
+    @Min(value = 1, message = "eventId should not be less than 1")
     private final Long eventId;
+    @Min(value = 1, message = "entityId should not be less than 1")
     private final Long entityId;
+    @Min(value = 1, message = "userId should not be less than 1")
     private Long userId;
 
     @Override
