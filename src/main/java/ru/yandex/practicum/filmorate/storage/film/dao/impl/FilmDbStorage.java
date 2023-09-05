@@ -6,16 +6,14 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.storage.film.dao.FilmStorage;
 
+import java.sql.*;
 import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
@@ -222,26 +220,31 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Set<Long> findIdLikedFilmsByUser(Long id) {
-        String sqlQuery = "SELECT film_id " +
-                "          FROM likes " +
-                "          WHERE user_id = ?";
-
-        SqlRowSet sqlRowSet = jdbcTemplate.queryForRowSet(sqlQuery, id);
-        Set<Long> likes = new HashSet<>();
-        while (sqlRowSet.next()) {
-            likes.add(sqlRowSet.getLong("film_id"));
-        }
-        return likes;
-    }
-
-    @Override
     public void deleteById(Long id) {
         String sqlQuery = "DELETE FROM film " +
                 "          WHERE film_id = ?";
 
         jdbcTemplate.update(sqlQuery, id);
         log.info("Фильм с идентификатором {} удален.", id);
+    }
+
+    @Override
+    public List<Film> findFilmsByIds(Set<Long> idsFilmsForRecommendations) {
+        String inSql = String.join(",", Collections.nCopies(idsFilmsForRecommendations.size(), "?"));
+        return jdbcTemplate.query(
+                String.format("SELECT DISTINCT f.film_id,\n" +
+                        "f.name,\n" +
+                        "f.release_date,\n" +
+                        "f.duration,\n" +
+                        "f.description,\n" +
+                        "f.mpa AS rating_id,\n" +
+                        "m.name AS rating_name\n" +
+                        "FROM film AS f\n" +
+                        "INNER JOIN mpa m ON f.mpa = m.rating_id\n" +
+                        "WHERE f.film_id IN (%s)\n" +
+                        "ORDER BY f.film_id", inSql),
+                idsFilmsForRecommendations.toArray(),
+                this::mapRowToFilm);
     }
 
     @Override

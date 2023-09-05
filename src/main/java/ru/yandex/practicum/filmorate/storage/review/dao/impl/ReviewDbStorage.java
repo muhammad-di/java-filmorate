@@ -150,14 +150,14 @@ public class ReviewDbStorage implements ReviewStorage {
 
         String getAllReviewsByFilmId = "SELECT * " +
                 "                       FROM reviews " +
-                "                       WHERE film_id = " + filmId +
+                "                       WHERE film_id = ? " +
                 "                       ORDER BY useful DESC";
 
         String getAllReviewsByFilmIdAndCount = "SELECT * " +
                 "                               FROM reviews " +
-                "                               WHERE film_id = " + filmId +
+                "                               WHERE film_id = ?" +
                 "                               ORDER BY useful DESC" +
-                "                               LIMIT " + count;
+                "                               LIMIT ?";
 
         String getAllReviews = "SELECT * " +
                 "               FROM reviews" +
@@ -165,11 +165,11 @@ public class ReviewDbStorage implements ReviewStorage {
 
         if (filmId != null && count != null) {
             return jdbcTemplate.query(getAllReviewsByFilmIdAndCount,
-                    this::mapRowToReview);
+                    this::mapRowToReview, filmId, count);
         }
 
         if (filmId != null) {
-            return jdbcTemplate.query(getAllReviewsByFilmId, this::mapRowToReview);
+            return jdbcTemplate.query(getAllReviewsByFilmId, this::mapRowToReview, filmId);
         }
 
         return jdbcTemplate.query(getAllReviews, this::mapRowToReview);
@@ -267,9 +267,9 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     public boolean hasUserLikedReview(Long reviewId, Long userId) {
-        String sqlQuery = "SELECT user_id FROM reviews_likes WHERE review_id = " + reviewId;
+        String sqlQuery = "SELECT user_id FROM reviews_likes WHERE review_id = ?";
 
-        List<Long> userIds = jdbcTemplate.query(sqlQuery, this::mapRowToUserId);
+        List<Long> userIds = jdbcTemplate.query(sqlQuery, this::mapRowToUserId, reviewId);
 
         if (userIds.contains(userId)) {
             return true;
@@ -278,9 +278,9 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     public boolean hasUserDislikedReview(Long reviewId, Long userId) {
-        String sqlQuery = "SELECT user_id FROM reviews_dislikes WHERE review_id = " + reviewId;
+        String sqlQuery = "SELECT user_id FROM reviews_dislikes WHERE review_id = ?";
 
-        List<Long> userIds = jdbcTemplate.query(sqlQuery, this::mapRowToUserId);
+        List<Long> userIds = jdbcTemplate.query(sqlQuery, this::mapRowToUserId, reviewId);
 
         if (userIds.contains(userId)) {
             return true;
