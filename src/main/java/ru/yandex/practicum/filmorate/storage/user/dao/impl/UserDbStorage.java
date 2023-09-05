@@ -175,7 +175,8 @@ public class UserDbStorage implements UserStorage {
                 } else {
                     allUsersWithTheirLikedFilms.put(idUser, new ArrayList<>() {{
                         add(idFilm);
-                    }});
+                    }
+                    });
                 }
             }
             return allUsersWithTheirLikedFilms;
