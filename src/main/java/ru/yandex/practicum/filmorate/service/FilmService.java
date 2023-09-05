@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.director.dao.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.dao.FilmStorage;
@@ -110,11 +111,11 @@ public class FilmService {
     }
 
     public Film findById(Long id) throws FilmDoesNotExistException {
-        if (!storage.contains(id)) {
+        Film film = storage.findById(id);
+        if (film == null) {
             throw new FilmDoesNotExistException("Film " +
-                    "with such id {" + id + "} does not exist", 404);
-        }
-        return storage.findById(id);
+                    "with such id {" + id + "} does not exist", 404);        }
+        return film;
     }
 
     public void deleteById(Long id) throws FilmDoesNotExistException {

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -216,7 +217,11 @@ public class FilmDbStorage implements FilmStorage {
                 "          INNER JOIN mpa m ON f.mpa = m.rating_id\n" +
                 "          WHERE f.film_id = ?";
 
-        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, id);
+        try {
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     @Override
