@@ -2,8 +2,8 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.UserDoesNotExistException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.dao.UserStorage;
 
@@ -16,12 +16,13 @@ public class RecommendationsService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
 
-    public Set<Film> findRecommendedFilms(Long userId) {
-        Map<Long, Set<Long>> allUsersWithTheirLikedFilm = userStorage.findAll()
-                .stream()
-                .collect(Collectors.toMap(User::getId,
-                        user -> filmStorage.findIdLikedFilmsByUser(user.getId())));
+    public List<Film> findRecommendedFilms(Long userId) throws UserDoesNotExistException {
+        if (!userStorage.contains(userId)) {
+            throw new UserDoesNotExistException("User " +
+                    "with such id {" + userId + "} does not exist", 404);
+        }
 
+        Map<Long, List<Long>> allUsersWithTheirLikedFilm = userStorage.findAllUsersWithTheirLikedFilms();
         List<Long> idUsersBySimilarLikes = new ArrayList<>();
         long maxCount = 0;
 
@@ -42,14 +43,17 @@ public class RecommendationsService {
         }
 
         if (maxCount > 0) {
-            idUsersBySimilarLikes.sort(Comparator.naturalOrder());
-            return idUsersBySimilarLikes.stream()
-                    .flatMap(idUser -> filmStorage.findIdLikedFilmsByUser(idUser).stream())
+
+            Set<Long> idsFilmsForRecommendations = idUsersBySimilarLikes.stream()
+                    .flatMap(idUser -> allUsersWithTheirLikedFilm.get(idUser).stream())
                     .filter(filmId -> !allUsersWithTheirLikedFilm.get(userId).contains(filmId))
-                    .map(filmStorage::findById)
                     .collect(Collectors.toSet());
+            return filmStorage.findFilmsByIds(idsFilmsForRecommendations);
         } else {
-            return new HashSet<>();
+            return new ArrayList<>();
         }
     }
 }
+
+
+

@@ -11,7 +11,7 @@ import ru.yandex.practicum.filmorate.service.RecommendationsService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
 import static ru.yandex.practicum.filmorate.Constants.MIN_ID;
 
@@ -89,7 +89,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/recommendations")
-    public Set<Film> findRecommendedFilms(@PathVariable Long id) {
+    public List<Film> findRecommendedFilms(@PathVariable Long id) throws UserDoesNotExistException {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }

@@ -161,6 +161,28 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, id);
     }
 
+    @Override
+    public Map<Long, List<Long>> findAllUsersWithTheirLikedFilms() {
+
+        return jdbcTemplate.query("SELECT * FROM likes", (ResultSet rs) -> {
+            Map<Long, List<Long>> allUsersWithTheirLikedFilms = new HashMap<>();
+            while (rs.next()) {
+                long idFilm = rs.getLong("film_id");
+                long idUser = rs.getLong("user_id");
+
+                if (allUsersWithTheirLikedFilms.containsKey(idUser)) {
+                    allUsersWithTheirLikedFilms.get(idUser).add(idFilm);
+                } else {
+                    allUsersWithTheirLikedFilms.put(idUser, new ArrayList<>() {{
+                        add(idFilm);
+                    }
+                    });
+                }
+            }
+            return allUsersWithTheirLikedFilms;
+        });
+    }
+
     public void deleteById(Long id) {
         String sqlQuery = "DELETE FROM users " +
                 "WHERE " +
@@ -187,7 +209,7 @@ public class UserDbStorage implements UserStorage {
     // helpers methods for a CREATE method------------------------------------------------------------------------------
 
     private User mapRowToUser(ResultSet rs, Integer rowNum) throws SQLException {
-        Long id = rs.getLong("user_id");
+        long id = rs.getLong("user_id");
         String login = rs.getString("login");
         LocalDate birthday = rs.getDate("birthday").toLocalDate();
         String email = rs.getString("email");

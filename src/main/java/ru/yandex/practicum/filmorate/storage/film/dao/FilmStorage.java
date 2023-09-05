@@ -24,11 +24,11 @@ public interface FilmStorage {
 
     Film findById(Long id);
 
-    Set<Long> findIdLikedFilmsByUser(Long id);
-
     List<Film> findFilmBySearchByTitleOrDirector(String title, boolean isDirectorCheck, boolean isTitleCheck);
 
     void deleteById(Long id);
+
+    List<Film> findFilmsByIds(Set<Long> idsFilmsForRecommendations);
 
     List<Film> findCommonFilms(Integer userId, Integer friendId);
 
