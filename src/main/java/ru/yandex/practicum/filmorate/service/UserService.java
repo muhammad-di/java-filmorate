@@ -4,7 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import ru.yandex.practicum.filmorate.exeption.*;
+import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.dao.UserStorage;
 import ru.yandex.practicum.filmorate.validation.UserValidation;
@@ -23,15 +24,15 @@ public class UserService {
 
     public Collection<User> findAll() {
         return storage.findAll();
-
     }
 
-    public User create(User user) throws InvalidUserPropertiesException, UserAlreadyExistException {
+    public User create(User user)
+            throws InvalidUserPropertiesException, UserAlreadyExistException {
         if (UserValidation.validate(user)) {
             log.info("User validation error");
             throw new InvalidUserPropertiesException("Invalid properties for a user", 406);
         }
-        if (storage.containsUser(user.getId())) {
+        if (storage.contains(user.getId())) {
             log.info("User already exists error");
             throw new UserAlreadyExistException("User already exists", 409);
         }
@@ -41,10 +42,9 @@ public class UserService {
         return storage.create(user);
     }
 
-    public User update(User user) throws UserDoesNotExistException, InvalidUserPropertiesException {
-        if (!storage.containsUser(user.getId())) {
-            throw new UserDoesNotExistException("User with such id {" + user.getId() + "} does not exist", 404);
-        }
+    public User update(User user)
+            throws UserDoesNotExistException, InvalidUserPropertiesException {
+        contains(user.getId());
         if (UserValidation.validate(user)) {
             log.info("User validation error");
             throw new InvalidUserPropertiesException("Invalid name if a film", 406);
@@ -55,26 +55,53 @@ public class UserService {
         return storage.update(user);
     }
 
-    public Collection<User> getAllFriends(Long id) {
-        return storage.getAllFriends(id);
+    public Collection<User> findAllFriends(Long id) throws UserDoesNotExistException {
+        contains(id);
+        return storage.findAllFriends(id);
     }
 
-    public void addFriend(Long id, Long idOfFriend) {
+    public void addFriend(Long id, Long idOfFriend) throws UserDoesNotExistException {
+        contains(id);
+        contains(idOfFriend);
         storage.addFriend(id, idOfFriend);
     }
 
-    public void deleteFriend(Long id, Long idOfFriend) {
+    public void deleteFriend(Long id, Long idOfFriend) throws UserDoesNotExistException {
+        contains(id);
+        contains(idOfFriend);
         storage.deleteFriend(id, idOfFriend);
     }
 
-    public Collection<User> getCommonFriends(Long id, Long idOfFriend) {
-        return storage.getCommonFriends(id, idOfFriend);
+    public Collection<User> findCommonFriends(Long id, Long idOfFriend)
+            throws UserDoesNotExistException {
+        contains(id);
+        contains(idOfFriend);
+        return storage.findCommonFriends(id, idOfFriend);
     }
 
-    public User getUserById(Long id) throws UserDoesNotExistException {
-        if (!storage.containsUser(id)) {
-            throw new UserDoesNotExistException("User with such id {" + id + "} does not exist", 404);
+    public User findById(Long id) throws UserDoesNotExistException {
+        User user = storage.findById(id);
+        if (user == null) {
+            throw new UserDoesNotExistException("User " +
+                    "with such id {" + id + "} does not exist", 404);
         }
-        return storage.getUserById(id);
+        return user;
+    }
+
+    public void deleteById(Long id) throws UserDoesNotExistException {
+        contains(id);
+        storage.deleteById(id);
+    }
+
+    public Collection<Event> findFeedOfUser(Long id) throws UserDoesNotExistException {
+        contains(id);
+        return storage.findEventByUserId(id);
+    }
+
+    private void contains(Long id) throws UserDoesNotExistException {
+        if (!storage.contains(id)) {
+            throw new UserDoesNotExistException("User " +
+                    "with such id {" + id + "} does not exist", 404);
+        }
     }
 }

@@ -3,11 +3,11 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exeption.MpaDoesNotExistException;
+import ru.yandex.practicum.filmorate.exception.MpaDoesNotExistException;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.mpa.dao.MpaStorage;
 
-import java.util.List;
+import java.util.Collection;
 
 @Slf4j
 @Service
@@ -19,14 +19,15 @@ public class MpaService {
         this.storage = storage;
     }
 
-    public List<Mpa> findAll() {
+    public Collection<Mpa> findAll() {
         return storage.findAll();
     }
 
-    public Mpa getMpaById(Integer id) throws MpaDoesNotExistException {
-        if (!storage.containsMpa(id)) {
+    public Mpa findById(Integer id) throws MpaDoesNotExistException {
+        Mpa mpa = storage.findById(id);
+        if (mpa == null) {
             throw new MpaDoesNotExistException("mpa rating with such id {" + id + "} does not exist", 404);
         }
-        return storage.getMpaById(id);
+        return mpa;
     }
 }

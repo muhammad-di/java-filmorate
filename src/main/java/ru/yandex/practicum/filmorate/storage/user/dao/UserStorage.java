@@ -1,8 +1,11 @@
 package ru.yandex.practicum.filmorate.storage.user.dao;
 
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 
 public interface UserStorage {
@@ -12,15 +15,21 @@ public interface UserStorage {
 
     User update(User user);
 
-    Collection<User> getAllFriends(Long id);
+    Collection<User> findAllFriends(Long id);
 
     void addFriend(Long id, Long idOfFriend);
 
     void deleteFriend(Long id, Long idOfFriend);
 
-    Collection<User> getCommonFriends(Long id, Long idOfFriend);
+    Collection<User> findCommonFriends(Long id, Long idOfFriend);
 
-    boolean containsUser(Long idOfUser);
+    Boolean contains(Long idOfUser);
 
-    User getUserById(Long id);
+    User findById(Long id);
+
+    Map<Long, List<Long>> findAllUsersWithTheirLikedFilms();
+
+    void deleteById(Long id);
+
+    Collection<Event> findEventByUserId(Long id);
 }

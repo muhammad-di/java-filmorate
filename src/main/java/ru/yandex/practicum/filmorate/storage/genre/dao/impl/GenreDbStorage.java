@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.genre.dao.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -10,8 +11,7 @@ import ru.yandex.practicum.filmorate.storage.genre.dao.GenreStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 
 @Slf4j
@@ -26,49 +26,40 @@ public class GenreDbStorage implements GenreStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-
     @Override
-    public List<Genre> findAll() {
+    public Collection<Genre> findAll() {
         String sqlQuery = "SELECT\n" +
-                "g.GENRE_ID,\n" +
-                "g.NAME\n" +
-                "FROM GENRE g\n" +
-                "ORDER BY GENRE_ID ASC";
+                "          g.genre_id,\n" +
+                "          g.name\n" +
+                "          FROM genre g\n" +
+                "          ORDER BY genre_id ASC";
 
-        return jdbcTemplate.query(sqlQuery, this::makeGenreList);
-    }
-
-
-    @Override
-    public boolean containsGenre(Integer idOfGenre) {
-        String sqlQuery = "SELECT EXISTS(SELECT 1 FROM genre WHERE genre_id = ?) AS GENRE";
-
-        return jdbcTemplate.queryForObject(sqlQuery, (rs, rn) -> rs.getBoolean("GENRE"), idOfGenre);
+        return jdbcTemplate.query(sqlQuery, this::mapRowToGenre);
     }
 
     @Override
-    public Genre getGenreById(Integer id) {
+    public Boolean contains(Integer idOfGenre) {
+        String sqlQuery = "SELECT EXISTS(SELECT 1 FROM genre WHERE genre_id = ?) AS is_genre";
+
+        return jdbcTemplate.queryForObject(sqlQuery, (rs, rn) -> rs.getBoolean("is_genre"), idOfGenre);
+    }
+
+    @Override
+    public Genre findById(Integer id) {
         String sqlQuery = "SELECT\n" +
-                "g.GENRE_ID,\n" +
-                "g.NAME\n" +
-                "FROM GENRE g\n" +
-                "WHERE g.GENRE_ID = ?";
+                "          g.genre_id,\n" +
+                "          g.name\n" +
+                "          FROM genre g\n" +
+                "          WHERE g.genre_id = ?";
 
-        return jdbcTemplate.queryForObject(sqlQuery, this::makeGenre, id);
-    }
-
-    private List<Genre> makeGenreList(ResultSet rs) throws SQLException {
-        List<Genre> genreList = new ArrayList<>();
-
-        while (rs.next()) {
-            Genre genre = makeGenre(rs);
-            genreList.add(genre);
+        try {
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToGenre, id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
         }
-
-        return genreList;
     }
 
-    private Genre makeGenre(ResultSet rs, Integer... rn) throws SQLException {
+    private Genre mapRowToGenre(ResultSet rs, Integer rn) throws SQLException {
         Integer genreId = rs.getInt("GENRE_ID");
         String genreName = rs.getString("NAME");
         return new Genre(genreId, genreName);

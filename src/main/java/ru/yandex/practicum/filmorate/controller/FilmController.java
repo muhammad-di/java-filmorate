@@ -3,13 +3,15 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exeption.*;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Sorting;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import javax.validation.Valid;
 import java.util.*;
 
-import static ru.yandex.practicum.filmorate.Constants.MIN_ID;
+import static ru.yandex.practicum.filmorate.Constants.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,17 +27,20 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) throws InvalidFilmPropertiesException, FilmAlreadyExistException {
+    public Film create(@Valid @RequestBody Film film)
+            throws InvalidFilmPropertiesException, FilmAlreadyExistException {
         return filmService.create(film);
     }
 
     @PutMapping
-    public Film update(@RequestBody Film film) throws FilmDoesNotExistException, InvalidFilmPropertiesException {
+    public Film update(@Valid @RequestBody Film film)
+            throws FilmDoesNotExistException, InvalidFilmPropertiesException {
         return filmService.update(film);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
+    public void addLike(@PathVariable Long id, @PathVariable Long userId)
+            throws FilmDoesNotExistException, UserDoesNotExistException {
         if (id < MIN_ID || userId < MIN_ID) {
             String msg = String.format("Path \"/%d/like/%d\" does not exist", id, userId);
             throw new PathNotFoundException(msg);
@@ -44,7 +49,8 @@ public class FilmController {
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteFriend(@PathVariable Long id, @PathVariable Long userId) {
+    public void deleteFriend(@PathVariable Long id, @PathVariable Long userId)
+            throws FilmDoesNotExistException, UserDoesNotExistException {
         if (id < MIN_ID || userId < MIN_ID) {
             String msg = String.format("Path \"/%d/like/%d\" does not exist", id, userId);
             throw new PathNotFoundException(msg);
@@ -52,11 +58,28 @@ public class FilmController {
         filmService.deleteLike(id, userId);
     }
 
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(
+            @RequestParam Integer userId,
+            @RequestParam Integer friendId) {
+        return filmService.findCommonFilms(userId, friendId);
+    }
+
     @GetMapping("/popular")
     public Collection<Film> getPopularFilms(
-            @RequestParam(defaultValue = DEFAULT_MOST_FAVORITE_FILMS_COUNT) Integer count
+            @RequestParam(defaultValue = DEFAULT_MOST_FAVORITE_FILMS_COUNT) Integer count,
+            @RequestParam(required = false) Integer genreId,
+            @RequestParam(required = false) Integer year
     ) {
-        return filmService.getMostPopularFilms(count);
+        return filmService.findMostPopularFilms(count, genreId, year);
+    }
+
+    @GetMapping("/search")
+    public List<Film> getFilmsBySearch(
+            @RequestParam() String query,
+            @RequestParam() String by
+    ) throws IncorrectParameterException {
+        return filmService.findFilmBySearchByTitleOrDirector(query, by);
     }
 
     @GetMapping("/{id}")
@@ -64,6 +87,30 @@ public class FilmController {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
-        return filmService.getFilmById(id);
+        return filmService.findById(id);
+    }
+
+    @DeleteMapping("/{filmId}")
+    public void deleteFilmById(@PathVariable Long filmId) throws FilmDoesNotExistException {
+        if (filmId < MIN_ID) {
+            throw new IncorrectParameterException("id");
+        }
+        filmService.deleteById(filmId);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> getFilmsWithDirectorSorted(@PathVariable Long directorId,
+                                                       @RequestParam String sortBy)
+            throws DirectorDoesNotExistException {
+        if (directorId < MIN_ID) {
+            throw new IncorrectParameterException("directorId");
+        }
+        Sorting sorting;
+        try {
+            sorting = Sorting.valueOf(sortBy);
+        } catch (IllegalArgumentException e) {
+            throw new IncorrectParameterException("sortBy");
+        }
+        return filmService.findFilmsWithDirectorSorted(directorId, sorting);
     }
 }

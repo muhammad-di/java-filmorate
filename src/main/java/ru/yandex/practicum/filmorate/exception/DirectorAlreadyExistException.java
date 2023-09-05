@@ -1,23 +1,24 @@
-package ru.yandex.practicum.filmorate.exeption;
+package ru.yandex.practicum.filmorate.exception;
 
-public class InvalidFilmPropertiesException extends Exception {
+
+public class DirectorAlreadyExistException extends Exception {
 
     private int errorCode;
     private String errorMessage;
 
-    public InvalidFilmPropertiesException(Throwable throwable) {
+    public DirectorAlreadyExistException(Throwable throwable) {
         super(throwable);
     }
 
-    public InvalidFilmPropertiesException(String msg, Throwable throwable) {
+    public DirectorAlreadyExistException(String msg, Throwable throwable) {
         super(msg, throwable);
     }
 
-    public InvalidFilmPropertiesException(String msg) {
+    public DirectorAlreadyExistException(String msg) {
         super(msg);
     }
 
-    public InvalidFilmPropertiesException(String message, int errorCode) {
+    public DirectorAlreadyExistException(String message, int errorCode) {
         super();
         this.errorCode = errorCode;
         this.errorMessage = message;

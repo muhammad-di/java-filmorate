@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.mpa.dao.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -25,52 +26,42 @@ public class MpaDbStorage implements MpaStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-
     @Override
-    public List<Mpa> findAll() {
+    public Collection<Mpa> findAll() {
         String sqlQuery = "SELECT\n" +
-                "m.RATING_ID AS RATING_ID,\n" +
-                "m.NAME AS RATING_NAME\n" +
-                "FROM MPA m\n" +
-                "ORDER BY RATING_ID ASC";
+                "          m.rating_id AS rating_id,\n" +
+                "          m.name AS rating_name\n" +
+                "          FROM mpa m\n" +
+                "          ORDER BY rating_id ASC";
 
-
-        return jdbcTemplate.query(sqlQuery, this::makeMpaList);
-    }
-
-
-    @Override
-    public boolean containsMpa(Integer idOfMpa) {
-        String sqlQuery = "SELECT EXISTS(SELECT 1 FROM mpa WHERE rating_id = ?) AS RATING";
-
-        return jdbcTemplate.queryForObject(sqlQuery, (rs, rn) -> rs.getBoolean("RATING"), idOfMpa);
+        return jdbcTemplate.query(sqlQuery, this::mapRorToMpa);
     }
 
     @Override
-    public Mpa getMpaById(Integer id) {
+    public Boolean contains(Integer idOfMpa) {
+        String sqlQuery = "SELECT EXISTS(SELECT 1 FROM mpa WHERE rating_id = ?) AS rating";
+
+        return jdbcTemplate.queryForObject(sqlQuery, (rs, rn) -> rs.getBoolean("rating"), idOfMpa);
+    }
+
+    @Override
+    public Mpa findById(Integer id) {
         String sqlQuery = "SELECT\n" +
-                "m.RATING_ID AS RATING_ID,\n" +
-                "m.NAME AS RATING_NAME\n" +
-                "FROM MPA m\n" +
-                "WHERE m.RATING_ID = ?";
+                "          m.rating_id AS rating_id,\n" +
+                "          m.name AS rating_name\n" +
+                "          FROM mpa m\n" +
+                "          WHERE m.rating_id = ?";
 
-        return jdbcTemplate.queryForObject(sqlQuery, this::makeMpa, id);
-    }
-
-    private List<Mpa> makeMpaList(ResultSet rs) throws SQLException {
-        List<Mpa> mpaList = new ArrayList<>();
-
-        while (rs.next()) {
-            Mpa mpa = makeMpa(rs);
-            mpaList.add(mpa);
+        try {
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapRorToMpa, id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
         }
-
-        return mpaList;
     }
 
-    private Mpa makeMpa(ResultSet rs, Integer... rn) throws SQLException {
-        Integer ratingId = rs.getInt("RATING_ID");
-        String ratingName = rs.getString("RATING_NAME");
+    private Mpa mapRorToMpa(ResultSet rs, Integer rn) throws SQLException {
+        Integer ratingId = rs.getInt("rating_id");
+        String ratingName = rs.getString("rating_name");
         return new Mpa(ratingId, ratingName);
     }
 }

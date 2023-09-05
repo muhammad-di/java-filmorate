@@ -1,23 +1,24 @@
-package ru.yandex.practicum.filmorate.exeption;
+package ru.yandex.practicum.filmorate.exception;
 
-public class InvalidUserPropertiesException extends Exception {
+
+public class DirectorDoesNotExistException extends Exception {
 
     private int errorCode;
     private String errorMessage;
 
-    public InvalidUserPropertiesException(Throwable throwable) {
+    public DirectorDoesNotExistException(Throwable throwable) {
         super(throwable);
     }
 
-    public InvalidUserPropertiesException(String msg, Throwable throwable) {
+    public DirectorDoesNotExistException(String msg, Throwable throwable) {
         super(msg, throwable);
     }
 
-    public InvalidUserPropertiesException(String msg) {
+    public DirectorDoesNotExistException(String msg) {
         super(msg);
     }
 
-    public InvalidUserPropertiesException(String message, int errorCode) {
+    public DirectorDoesNotExistException(String message, int errorCode) {
         super();
         this.errorCode = errorCode;
         this.errorMessage = message;

@@ -3,11 +3,11 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exeption.*;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
-import java.util.List;
+import java.util.Collection;
 
 import static ru.yandex.practicum.filmorate.Constants.MIN_ID;
 
@@ -19,15 +19,15 @@ public class MpaController {
     private final MpaService mpaService;
 
     @GetMapping
-    public List<Mpa> findAll() {
+    public Collection<Mpa> findAll() {
         return mpaService.findAll();
     }
 
     @GetMapping("/{id}")
-    public Mpa getMpaById(@PathVariable Integer id) throws MpaDoesNotExistException {
+    public Mpa findById(@PathVariable Integer id) throws MpaDoesNotExistException {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }
-        return mpaService.getMpaById(id);
+        return mpaService.findById(id);
     }
 }

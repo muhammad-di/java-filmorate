@@ -4,19 +4,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.context.annotation.Primary;
-import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.dao.UserStorage;
 
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,43 +35,36 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Collection<User> findAll() {
         String sqlQuery = "SELECT \n" +
-                "u.*\n" +
-                "FROM USERS u";
+                "          u.*\n" +
+                "          FROM users u";
 
-        return jdbcTemplate.query(sqlQuery, this::makeUserList);
+        return jdbcTemplate.query(sqlQuery, this::mapRowToUser);
     }
 
     @Override
     public User create(User user) {
-        String sqlQuery = "INSERT INTO users (LOGIN, BIRTHDAY, EMAIL, NAME) " +
-                "VALUES (?, ?, ?, ?)";
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("users")
+                .usingGeneratedKeyColumns("user_id");
+        long userId = simpleJdbcInsert.executeAndReturnKey(user.toMap()).longValue();
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"user_id"});
-            stmt.setString(1, user.getLogin());
-            stmt.setDate(2, Date.valueOf(user.getBirthday()));
-            stmt.setString(3, user.getEmail());
-            stmt.setString(4, user.getName());
-            return stmt;
-        }, keyHolder);
-        user.setId(keyHolder.getKey().longValue());
-        if (user.getFriends() != null) {
+        user.setId(userId);
+        if (!CollectionUtils.isEmpty(user.getFriends())) {
             setFriends(user);
         }
 
-        return getUserById(keyHolder.getKey().longValue());
+        return findById(userId);
     }
 
     @Override
     public User update(User user) {
         String sqlQuery = "UPDATE users " +
-                "SET\n" +
-                "LOGIN = ?,\n" +
-                "BIRTHDAY = ?,\n" +
-                "EMAIL = ?,\n" +
-                "NAME = ?\n" +
-                "WHERE USER_ID = ?";
+                "          SET\n" +
+                "          login = ?,\n" +
+                "          birthday = ?,\n" +
+                "          email = ?,\n" +
+                "          name = ?\n" +
+                "          WHERE user_id = ?";
 
         jdbcTemplate.update(sqlQuery,
                 user.getLogin(),
@@ -80,108 +73,153 @@ public class UserDbStorage implements UserStorage {
                 user.getName(),
                 user.getId()
         );
-        if (user.getFriends() != null) {
+        if (!CollectionUtils.isEmpty(user.getFriends())) {
             updateFriends(user);
         }
 
-        return getUserById(user.getId());
+        return findById(user.getId());
     }
 
     @Override
-    public Collection<User> getAllFriends(Long id) {
+    public Collection<User> findAllFriends(Long id) {
         String sqlQuery = "SELECT \n" +
-                "f.FRIEND_ID,\n" +
-                "u.USER_ID,\n" +
-                "u.LOGIN,\n" +
-                "u.BIRTHDAY,\n" +
-                "u.EMAIL,\n" +
-                "u.NAME\n" +
-                "FROM FRIENDS f\n" +
-                "INNER JOIN USERS u ON f.friend_id = u.user_id\n" +
-                "WHERE " +
-                "f.USER_ID = ?";
+                "          f.friend_id,\n" +
+                "          u.user_id,\n" +
+                "          u.login,\n" +
+                "          u.birthday,\n" +
+                "          u.email,\n" +
+                "          u.name\n" +
+                "          FROM friends f\n" +
+                "          INNER JOIN users u ON f.friend_id = u.user_id\n" +
+                "          WHERE " +
+                "          f.user_id = ?";
 
-        return jdbcTemplate.query(sqlQuery, this::makeUserList, id);
+        return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
     }
 
     @Override
     public void addFriend(Long id, Long idOfFriend) {
-        String sqlQuery = "INSERT INTO friends (USER_ID, FRIEND_ID) " +
-                "VALUES (?, ?)";
+        String sqlQuery = "INSERT INTO friends (user_id, friend_id) " +
+                "          VALUES (?, ?)";
 
         jdbcTemplate.update(sqlQuery, id, idOfFriend);
+        createEvent(id, idOfFriend, Operation.ADD);
     }
 
     @Override
     public void deleteFriend(Long id, Long idOfFriend) {
         String sqlQuery = "DELETE FROM friends\n" +
-                "WHERE\n" +
-                "USER_ID = ?\n" +
-                "AND\n" +
-                "FRIEND_ID = ?";
+                "          WHERE\n" +
+                "          user_id = ?\n" +
+                "          AND\n" +
+                "          friend_id = ?";
 
         jdbcTemplate.update(sqlQuery, id, idOfFriend);
+        createEvent(id, idOfFriend, Operation.REMOVE);
+
     }
 
     @Override
-    public Collection<User> getCommonFriends(Long id, Long idOfFriend) {
-        Set<User> friends = new HashSet<>(getAllFriends(id));
-        Set<User> friendsOfFriend = new HashSet<>(getAllFriends(idOfFriend));
-
-        return friends
-                .stream()
-                .filter(friendsOfFriend::contains)
-                .collect(Collectors.toList());
+    public Collection<User> findCommonFriends(Long id, Long idOfFriend) {
+        String sqlQuery = " SELECT\n" +
+                "           u.*\n" +
+                "           FROM users u\n" +
+                "           WHERE u.user_id IN (" +
+                "                               SELECT\n" +
+                "                               f.friend_id AS friend_id \n" +
+                "                               FROM friends f\n" +
+                "                               WHERE \n" +
+                "                               friend_id IN (" +
+                "                                               SELECT\n" +
+                "                                               f.friend_id AS friend_id \n" +
+                "                                               FROM friends f\n" +
+                "                                               WHERE f.user_id = ?\n" +
+                "                                               )\n" +
+                "                               AND\n" +
+                "                               f.user_id = ?\n" +
+                "                               )";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, idOfFriend);
     }
 
     @Override
-    public boolean containsUser(Long idOfUser) {
-        String sqlQuery = "SELECT \n" +
-                "u.USER_ID\n" +
-                "FROM users u\n" +
-                "WHERE u.USER_ID = ?";
+    public Boolean contains(Long idOfUser) {
+        String sqlQuery = "SELECT EXISTS(SELECT 1 FROM users WHERE user_id = ?) AS is_user";
 
-        SqlRowSet userRows = jdbcTemplate.queryForRowSet(sqlQuery, idOfUser);
-        if (userRows.next()) {
-            log.info("Найден пользователь c id: {}", idOfUser);
-            return true;
-        } else {
-            log.info("Пользователь с идентификатором {} не найден.", idOfUser);
-            return false;
+        return jdbcTemplate.queryForObject(sqlQuery, (rs, rn) -> rs.getBoolean("is_user"), idOfUser);
+    }
+
+    @Override
+    public User findById(Long id) {
+        String sqlQuery = "SELECT\n" +
+                "          u.user_id,\n" +
+                "          u.login,\n" +
+                "          u.birthday,\n" +
+                "          u.email,\n" +
+                "          u.name\n" +
+                "          FROM users u\n" +
+                "          WHERE u.user_id = ?";
+
+        try {
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
         }
     }
 
     @Override
-    public User getUserById(Long id) {
-        String sqlQuery = "SELECT\n" +
-                "u.USER_ID,\n" +
-                "u.LOGIN,\n" +
-                "u.BIRTHDAY,\n" +
-                "u.EMAIL,\n" +
-                "u.NAME\n" +
-                "FROM users u\n" +
-                "WHERE u.USER_ID = ?";
+    public Map<Long, List<Long>> findAllUsersWithTheirLikedFilms() {
 
-        return jdbcTemplate.queryForObject(sqlQuery, this::makeUser, id);
+        return jdbcTemplate.query("SELECT * FROM likes", (ResultSet rs) -> {
+            Map<Long, List<Long>> allUsersWithTheirLikedFilms = new HashMap<>();
+            while (rs.next()) {
+                long idFilm = rs.getLong("film_id");
+                long idUser = rs.getLong("user_id");
+
+                if (allUsersWithTheirLikedFilms.containsKey(idUser)) {
+                    allUsersWithTheirLikedFilms.get(idUser).add(idFilm);
+                } else {
+                    allUsersWithTheirLikedFilms.put(idUser, new ArrayList<>() { {
+                                    add(idFilm);
+                                }
+                            }
+                    );
+                }
+            }
+            return allUsersWithTheirLikedFilms;
+        });
+    }
+
+    public void deleteById(Long id) {
+        String sqlQuery = "DELETE FROM users " +
+                "WHERE " +
+                "user_id = ?";
+
+        jdbcTemplate.update(sqlQuery, id);
+        log.info("Пользователь с идентификатором {} удален.", id);
+    }
+
+    public Collection<Event> findEventByUserId(Long id) {
+        String sqlQuery = "SELECT \n" +
+                "          f.event_id,\n" +
+                "          f.user_id,\n" +
+                "          f.entity_id,\n" +
+                "          f.event_type,\n" +
+                "          f.operation,\n" +
+                "          f.event_timestamp \n" +
+                "          FROM feed f\n" +
+                "          WHERE f.user_id = ?";
+
+        return jdbcTemplate.query(sqlQuery, this::mapRowToEvent, id);
     }
 
     // helpers methods for a CREATE method------------------------------------------------------------------------------
 
-    private List<User> makeUserList(ResultSet rs) throws SQLException, DataAccessException {
-        List<User> userList = new ArrayList<>();
-
-        while (rs.next()) {
-            userList.add(makeUser(rs));
-        }
-        return userList;
-    }
-
-    private User makeUser(ResultSet rs, Integer... rowNum) throws SQLException {
-        Long id = rs.getLong("USER_ID");
-        String login = rs.getString("LOGIN");
-        LocalDate birthday = rs.getDate("BIRTHDAY").toLocalDate();
-        String email = rs.getString("EMAIL");
-        String name = rs.getString("NAME");
+    private User mapRowToUser(ResultSet rs, Integer rowNum) throws SQLException {
+        long id = rs.getLong("user_id");
+        String login = rs.getString("login");
+        LocalDate birthday = rs.getDate("birthday").toLocalDate();
+        String email = rs.getString("email");
+        String name = rs.getString("name");
         Map<Long, Boolean> friends = makeFriendsMap(id);
 
         return User.builder()
@@ -196,27 +234,26 @@ public class UserDbStorage implements UserStorage {
 
     private Map<Long, Boolean> makeFriendsMap(Long id) {
         String sqlQuery = "SELECT\n" +
-                "f.FRIEND_ID,\n" +
-                "f.STATUS\n" +
-                "FROM friends f\n" +
-                "WHERE f.USER_ID = ?";
+                "          f.friend_id,\n" +
+                "          f.status\n" +
+                "          FROM friends f\n" +
+                "          WHERE f.user_id = ?";
 
         return jdbcTemplate.query(sqlQuery, rs -> {
             Map<Long, Boolean> mapOfFriends = new HashMap<>();
 
             while (rs.next()) {
-                Long friendId = rs.getLong("FRIEND_ID");
-                Boolean status = rs.getBoolean("STATUS");
+                Long friendId = rs.getLong("friend_id");
+                Boolean status = rs.getBoolean("status");
                 mapOfFriends.put(friendId, status);
             }
             return mapOfFriends;
         }, id);
     }
 
-
     private void setFriends(User user) {
-        String sqlQuery = "INSERT INTO users (USER_ID, FRIEND_ID, STATUS) " +
-                "VALUES (?, ?, ?)";
+        String sqlQuery = "INSERT INTO friends (user_id, friend_id, status) " +
+                "          VALUES (?, ?, ?)";
 
         user.getFriends()
                 .forEach((key, value) -> jdbcTemplate.update(sqlQuery, user.getId(), key, value));
@@ -249,11 +286,11 @@ public class UserDbStorage implements UserStorage {
 
     private Map<Long, Boolean> getUsers(User user) {
         String sqlQuery = "SELECT \n" +
-                "f.FRIEND_ID,\n" +
-                "f.STATUS,\n" +
-                "FROM\n" +
-                "FRIENDS f\n" +
-                "WHERE f.USER_ID = ?";
+                "          f.friend_id,\n" +
+                "          f.status,\n" +
+                "          FROM\n" +
+                "          friends f\n" +
+                "          WHERE f.user_id = ?";
 
         return jdbcTemplate.query(sqlQuery, rs -> {
             Map<Long, Boolean> mapOfFriends = new HashMap<>();
@@ -276,13 +313,47 @@ public class UserDbStorage implements UserStorage {
 
     private void updateFriendsStatus(User user, Map<Long, Boolean> friends) {
         String sqlQuery = "UPDATE \n" +
-                "friends \n" +
-                "SET STATUS = ? \n" +
-                "WHERE " +
-                "USER_ID = ? " +
-                "AND " +
-                "FRIEND_ID = ?";
+                "          friends \n" +
+                "          SET status = ? \n" +
+                "          WHERE " +
+                "          user_id = ? " +
+                "          AND " +
+                "          friend_id = ?";
 
         friends.forEach((key, value) -> jdbcTemplate.update(sqlQuery, value, user.getId(), key));
+    }
+
+    // helpers methods for a FIND_EVENT_BY_USER_ID method--------------------------------------------------------------------
+
+    private Event mapRowToEvent(ResultSet rs, Integer rowNum) throws SQLException {
+        Long eventId = rs.getLong("event_id");
+        Long userId = rs.getLong("user_id");
+        Long entityId = rs.getLong("entity_id");
+        Long timestamp = rs.getLong("event_timestamp");
+        EventType eventType = EventType.valueOf(rs.getString("event_type"));
+        Operation operation = Operation.valueOf(rs.getString("operation"));
+
+        return Event.builder()
+                .eventId(eventId)
+                .userId(userId)
+                .entityId(entityId)
+                .eventType(eventType)
+                .operation(operation)
+                .timestamp(timestamp)
+                .build();
+    }
+
+    private void createEvent(Long id, Long entityId, Operation operation) {
+        Event feed = Event.builder()
+                .userId(id)
+                .entityId(entityId)
+                .eventType(EventType.FRIEND)
+                .operation(operation)
+                .timestamp(Instant.now().toEpochMilli())
+                .build();
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("feed")
+                .usingGeneratedKeyColumns("event_id");
+        simpleJdbcInsert.execute(feed.toMap());
     }
 }
