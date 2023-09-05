@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.film.dao;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Sorting;
 
 
 import java.util.Collection;
@@ -32,7 +33,5 @@ public interface FilmStorage {
 
     List<Film> findCommonFilms(Integer userId, Integer friendId);
 
-    Collection<Film> findFilmsWithDirectorIdSortedByLikes(Long directorId);
-
-    Collection<Film> findFilmsWithDirectorIdSortedByYear(Long directorId);
+    Collection<Film> findSortedFilmsByDirectorId(Long directorId, Sorting sortBy);
 }

@@ -4,18 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Sorting;
 import ru.yandex.practicum.filmorate.storage.director.dao.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.dao.UserStorage;
 import ru.yandex.practicum.filmorate.validation.FilmValidation;
 
 import java.util.Collection;
-import java.util.Collections;
-
-import static ru.yandex.practicum.filmorate.Constants.LIKES_SORT;
-import static ru.yandex.practicum.filmorate.Constants.YEAR_SORT;
 
 import java.util.List;
 
@@ -128,18 +124,12 @@ public class FilmService {
         storage.deleteById(id);
     }
 
-    public Collection<Film> findFilmsWithDirectorSorted(Long directorId, String sort)
+    public Collection<Film> findFilmsWithDirectorSorted(Long directorId, Sorting sortBy)
             throws DirectorDoesNotExistException {
         if (!directorStorage.contains(directorId)) {
             String message = String.format("Director with such id {%s} does not exist", directorId);
             throw new DirectorDoesNotExistException(message);
         }
-        if (sort.equals(LIKES_SORT)) {
-            return storage.findFilmsWithDirectorIdSortedByLikes(directorId);
-        }
-        if (sort.equals(YEAR_SORT)) {
-            return storage.findFilmsWithDirectorIdSortedByYear(directorId);
-        }
-        return Collections.emptyList();
+        return storage.findSortedFilmsByDirectorId(directorId, sortBy);
     }
 }

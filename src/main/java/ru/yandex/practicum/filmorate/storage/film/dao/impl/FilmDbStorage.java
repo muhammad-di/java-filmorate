@@ -294,70 +294,61 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> findFilmsWithDirectorIdSortedByLikes(Long directorId) {
-        String sqlQueryWhenLikesArePresent = "SELECT\n" +
-                "                             f.film_id,\n" +
-                "                             f.name,\n" +
-                "                             f.release_date,\n" +
-                "                             f.duration,\n" +
-                "                             f.description,\n" +
-                "                             f.mpa rating_id,\n" +
-                "                             m.name rating_name,\n" +
-                "                             COUNT(l.film_id)\n" +
-                "                             FROM film f\n" +
-                "                             JOIN likes l ON l.film_id = f.film_id\n" +
-                "                             JOIN mpa m ON f.mpa = m.rating_id\n" +
-                "                             GROUP BY l.film_id\n" +
-                "                             HAVING f.film_id IN " +
-                "                             (" +
-                "                                  SELECT film_id" +
-                "                                  FROM film_director " +
-                "                                  WHERE director_id = ?" +
-                "                             )\n" +
-                "                             ORDER BY COUNT(l.film_id) DESC";
+    public Collection<Film> findSortedFilmsByDirectorId(Long directorId, Sorting sortBy) {
+        String sqlBase = "SELECT\n" +
+                "         f.film_id,\n" +
+                "         f.name,\n" +
+                "         f.release_date,\n" +
+                "         f.duration,\n" +
+                "         f.description,\n" +
+                "         f.mpa rating_id,\n" +
+                "         m.name rating_name\n";
 
-        String sqlQueryWhenLikesAbsent = "    SELECT\n" +
-                "                             f.film_id,\n" +
-                "                             f.name,\n" +
-                "                             f.release_date,\n" +
-                "                             f.duration,\n" +
-                "                             f.description,\n" +
-                "                             f.mpa rating_id,\n" +
-                "                             m.name rating_name\n" +
-                "                             FROM film f\n" +
-                "                             JOIN mpa m ON f.mpa = m.rating_id\n" +
-                "                             WHERE f.film_id IN " +
-                "                             (" +
-                "                                  SELECT film_id " +
-                "                                  FROM film_director " +
-                "                                  WHERE director_id = ?" +
-                "                             )";
+        if (sortBy.equals(Sorting.likes)) {
+            String sqlQueryLikesPresent = sqlBase.concat(
+                    "   FROM film f\n" +
+                            "JOIN mpa m ON f.mpa = m.rating_id\n" +
+                            "JOIN likes l ON l.film_id = f.film_id\n" +
+                            "GROUP BY l.film_id\n" +
+                            "HAVING f.film_id IN " +
+                            "(" +
+                            "     SELECT film_id" +
+                            "     FROM film_director " +
+                            "     WHERE director_id = ?" +
+                            ")\n" +
+                            "ORDER BY COUNT(l.film_id) DESC"
+            );
 
-        Collection<Film> list = jdbcTemplate.query(sqlQueryWhenLikesArePresent, this::mapRowToFilm, directorId);
-        if (CollectionUtils.isEmpty(list)) {
-            list = jdbcTemplate.query(sqlQueryWhenLikesAbsent, this::mapRowToFilm, directorId);
+            Collection<Film> list = jdbcTemplate.query(sqlQueryLikesPresent, this::mapRowToFilm, directorId);
+
+            if (CollectionUtils.isEmpty(list)) {
+                String sqlQueryLikesAbsent = sqlBase.concat(
+                        "   FROM film f\n" +
+                                "JOIN mpa m ON f.mpa = m.rating_id\n" +
+                                "WHERE f.film_id IN " +
+                                "(" +
+                                "     SELECT film_id " +
+                                "     FROM film_director " +
+                                "     WHERE director_id = ?" +
+                                ")"
+                );
+
+                list = jdbcTemplate.query(sqlQueryLikesAbsent, this::mapRowToFilm, directorId);
+            }
+            return list;
         }
+        if (sortBy.equals(Sorting.year)) {
+            String sqlQueryYear = sqlBase.concat(
+                    "  ,EXTRACT(YEAR FROM CAST(release_date AS DATE)) AS the_year\n" +
+                            "FROM film f\n" +
+                            "JOIN mpa m ON f.mpa = m.rating_id\n" +
+                            "WHERE f.film_id IN (SELECT film_id FROM film_director WHERE director_id = ?)\n" +
+                            "ORDER BY the_year");
 
-        return list;
-    }
+            return jdbcTemplate.query(sqlQueryYear, this::mapRowToFilm, directorId);
 
-    @Override
-    public Collection<Film> findFilmsWithDirectorIdSortedByYear(Long directorId) {
-        String sqlQuery = "SELECT\n" +
-                "          f.film_id,\n" +
-                "          f.name,\n" +
-                "          f.release_date,\n" +
-                "          f.duration,\n" +
-                "          f.description,\n" +
-                "          f.mpa rating_id,\n" +
-                "          m.name rating_name,\n" +
-                "          EXTRACT(YEAR FROM CAST(release_date AS DATE)) AS the_year\n" +
-                "          FROM film f\n" +
-                "          JOIN mpa m ON f.mpa = m.rating_id\n" +
-                "          WHERE f.film_id IN (SELECT film_id FROM film_director WHERE director_id = ?)\n" +
-                "          ORDER BY the_year";
-
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, directorId);
+        }
+        return Collections.emptyList();
     }
 
     // helpers methods for a CREATE method------------------------------------------------------------------------------
