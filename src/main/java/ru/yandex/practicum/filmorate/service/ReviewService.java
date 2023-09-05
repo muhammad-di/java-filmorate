@@ -5,9 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import ru.yandex.practicum.filmorate.exception.FilmDoesNotExistException;
-import ru.yandex.practicum.filmorate.exception.InvalidReviewPropertiesException;
-import ru.yandex.practicum.filmorate.exception.UserDoesNotExistException;
+import ru.yandex.practicum.filmorate.exception.*;
+
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.review.dao.ReviewStorage;
 
@@ -33,8 +32,12 @@ public class ReviewService {
         return storage.update(review);
     }
 
-    public Review findById(Long id) {
-        return storage.findById(id);
+    public Review findById(Long id) throws ReviewDoesNotExistException {
+        Review review = storage.findById(id);
+        if (review == null) {
+            throw new ReviewDoesNotExistException("Director with such id {" + id + "} does not exist", 404);
+        }
+        return review;
     }
 
     public void deleteById(Long id) {

@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.web.bind.annotation.*;
 
-import ru.yandex.practicum.filmorate.exception.FilmDoesNotExistException;
-import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.exception.InvalidReviewPropertiesException;
-import ru.yandex.practicum.filmorate.exception.UserDoesNotExistException;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
@@ -34,12 +31,13 @@ public class ReviewController {
 
     @GetMapping
     public List<Review> findAll(@RequestParam(required = false) Long filmId,
-                                      @RequestParam(required = false) Long count) {
+                                @RequestParam(required = false) Long count) {
         return reviewService.findAll(filmId, count);
     }
 
     @GetMapping("/{id}")
-    public Review findById(@PathVariable Long id) {
+    public Review findById(@PathVariable Long id)
+            throws ReviewDoesNotExistException {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }

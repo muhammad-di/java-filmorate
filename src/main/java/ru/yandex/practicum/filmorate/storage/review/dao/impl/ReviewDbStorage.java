@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -103,25 +104,12 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review findById(Long id) {
-        SqlRowSet reviewRow = jdbcTemplate
-                .queryForRowSet("SELECT * FROM reviews WHERE review_id = " + id);
+        String sqlQuery = "SELECT * FROM reviews WHERE review_id = ?";
 
-        if (reviewRow.next()) {
-            Review review = Review.builder()
-                    .reviewId(reviewRow.getLong("review_id"))
-                    .content(reviewRow.getString("content"))
-                    .isPositive(reviewRow.getBoolean("is_positive"))
-                    .userId(reviewRow.getLong("user_id"))
-                    .filmId(reviewRow.getLong("film_id"))
-                    .useful(reviewRow.getLong("useful"))
-                    .build();
-
-            log.info("Найден отзыв с id: {}.", review.getReviewId());
-
-            return review;
-        } else {
-            log.info("Отзыв с id: {} не найден.", id);
-            throw new ReviewDoesNotExistException();
+        try {
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToReview, id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
         }
     }
 
@@ -212,7 +200,7 @@ public class ReviewDbStorage implements ReviewStorage {
             this.deleteValuesFromReviewsDislikes(userId);
             jdbcTemplate.update(sqlQuery, reviewId);
         } else {
-            throw new UserHasNotDislikedReviewException("User hasn't disiked the review yet.");
+            throw new UserHasNotDislikedReviewException("User hasn't disliked the review yet.");
         }
     }
 
@@ -324,10 +312,14 @@ public class ReviewDbStorage implements ReviewStorage {
                 "                WHERE\n" +
                 "                r.review_id = ?";
 
-        Long userId = jdbcTemplate.queryForObject(sqlQueryUserId,
-                (rs, rn) -> rs.getLong("user_id"),
-                reviewId);
+        SqlRowSet userIdRow = jdbcTemplate.queryForRowSet(sqlQueryUserId, reviewId);
 
-        setFeedEvent(userId, reviewId, operation);
+        if (userIdRow.next()) {
+            return userIdRow.getLong("user_id");
+        } else {
+            log.info("Отзыв с id: {} не найден.", reviewId);
+            throw new ReviewDoesNotExistException();
+        }
+
     }
 }
