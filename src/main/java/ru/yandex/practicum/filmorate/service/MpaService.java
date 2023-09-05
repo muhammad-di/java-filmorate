@@ -24,9 +24,10 @@ public class MpaService {
     }
 
     public Mpa findById(Integer id) throws MpaDoesNotExistException {
-        if (!storage.contains(id)) {
+        Mpa mpa = storage.findById(id);
+        if (mpa == null) {
             throw new MpaDoesNotExistException("mpa rating with such id {" + id + "} does not exist", 404);
         }
-        return storage.findById(id);
+        return mpa;
     }
 }

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
@@ -158,7 +159,11 @@ public class UserDbStorage implements UserStorage {
                 "          FROM users u\n" +
                 "          WHERE u.user_id = ?";
 
-        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, id);
+        try {
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     @Override
@@ -173,9 +178,10 @@ public class UserDbStorage implements UserStorage {
                 if (allUsersWithTheirLikedFilms.containsKey(idUser)) {
                     allUsersWithTheirLikedFilms.get(idUser).add(idFilm);
                 } else {
-                    allUsersWithTheirLikedFilms.put(idUser, new ArrayList<>() {{
-                        add(idFilm);
-                    }
+                    allUsersWithTheirLikedFilms.put(idUser, new ArrayList<>() {
+                        {
+                            add(idFilm);
+                        }
                     });
                 }
             }

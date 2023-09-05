@@ -80,8 +80,12 @@ public class UserService {
     }
 
     public User findById(Long id) throws UserDoesNotExistException {
-        contains(id);
-        return storage.findById(id);
+        User user = storage.findById(id);
+        if (user == null) {
+            throw new UserDoesNotExistException("User " +
+                    "with such id {" + id + "} does not exist", 404);
+        }
+        return user;
     }
 
     public void deleteById(Long id) throws UserDoesNotExistException {

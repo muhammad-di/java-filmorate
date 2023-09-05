@@ -16,6 +16,7 @@ import java.util.Collections;
 
 import static ru.yandex.practicum.filmorate.Constants.LIKES_SORT;
 import static ru.yandex.practicum.filmorate.Constants.YEAR_SORT;
+
 import java.util.List;
 
 @Slf4j
@@ -114,7 +115,8 @@ public class FilmService {
         Film film = storage.findById(id);
         if (film == null) {
             throw new FilmDoesNotExistException("Film " +
-                    "with such id {" + id + "} does not exist", 404);        }
+                    "with such id {" + id + "} does not exist", 404);
+        }
         return film;
     }
 

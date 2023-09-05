@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.genre.dao.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -51,7 +52,11 @@ public class GenreDbStorage implements GenreStorage {
                 "          FROM genre g\n" +
                 "          WHERE g.genre_id = ?";
 
-        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToGenre, id);
+        try {
+            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToGenre, id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     private Genre mapRowToGenre(ResultSet rs, Integer rn) throws SQLException {

@@ -24,9 +24,10 @@ public class GenreService {
     }
 
     public Genre findById(Integer id) throws GenreDoesNotExistException {
-        if (!storage.contains(id)) {
+        Genre genre = storage.findById(id);
+        if (genre == null) {
             throw new GenreDoesNotExistException("genre rating with such id {" + id + "} does not exist", 404);
         }
-        return storage.findById(id);
+        return genre;
     }
 }
