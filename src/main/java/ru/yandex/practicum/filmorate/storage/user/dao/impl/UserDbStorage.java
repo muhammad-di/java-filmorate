@@ -173,9 +173,11 @@ public class UserDbStorage implements UserStorage {
                 if (allUsersWithTheirLikedFilms.containsKey(idUser)) {
                     allUsersWithTheirLikedFilms.get(idUser).add(idFilm);
                 } else {
-                    allUsersWithTheirLikedFilms.put(idUser, new ArrayList<>() {{
-                        add(idFilm);
-                    }});
+                    allUsersWithTheirLikedFilms.put(idUser, new ArrayList<>() {
+                        {
+                            add(idFilm);
+                        }
+                    });
                 }
             }
             return allUsersWithTheirLikedFilms;
