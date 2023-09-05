@@ -700,7 +700,7 @@ public class FilmDbStorage implements FilmStorage {
     /////////////////// GET_FEED_OF_USER --------------------------------------------------------------------------------
 
     private void setFeedEvent(Long id, Long entityId, Operation operation) {
-        FeedEntity feed = FeedEntity.builder()
+        Event feed = Event.builder()
                 .userId(id)
                 .entityId(entityId)
                 .eventType(EventType.LIKE)

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.*;
-import ru.yandex.practicum.filmorate.model.FeedEntity;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.RecommendationsService;
@@ -105,7 +105,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/feed")
-    public Collection<FeedEntity> getFeedOfUser(@PathVariable Long id) throws UserDoesNotExistException {
+    public Collection<Event> getFeedOfUser(@PathVariable Long id) throws UserDoesNotExistException {
         if (id < MIN_ID) {
             throw new IncorrectParameterException("id");
         }

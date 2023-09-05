@@ -10,10 +10,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 
 import ru.yandex.practicum.filmorate.exception.*;
-import ru.yandex.practicum.filmorate.model.EventType;
-import ru.yandex.practicum.filmorate.model.FeedEntity;
-import ru.yandex.practicum.filmorate.model.Operation;
-import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.review.dao.ReviewStorage;
 
 import java.sql.ResultSet;
@@ -68,7 +65,7 @@ public class ReviewDbStorage implements ReviewStorage {
         this.insertValuesToUserReviewsAndFilmReviews(review.getReviewId(),
                 review.getUserId(), review.getFilmId());
 
-        setFeedEvent(review.getUserId(), review.getReviewId(), Operation.ADD);
+        createEvent(review.getUserId(), review.getReviewId(), Operation.ADD);
 
         return review;
     }
@@ -88,7 +85,8 @@ public class ReviewDbStorage implements ReviewStorage {
             throw new IncorrectParameterException("Review id can't be null.");
         }
 
-        setFeedEntity(review.getReviewId(), Operation.UPDATE);
+        Long userId = findUserId(review.getReviewId());
+        createEvent(review.getReviewId(), userId, Operation.UPDATE);
 
         String sqlQuery = "UPDATE reviews " +
                 "          SET content = ?, is_positive = ? " +
@@ -138,7 +136,8 @@ public class ReviewDbStorage implements ReviewStorage {
             throw new ReviewDoesNotExistException("Review does not exist.");
         }
 
-        setFeedEntity(id, Operation.REMOVE);
+        Long userId = findUserId(id);
+        createEvent(id, userId, Operation.REMOVE);
 
         String sqlQuery = "DELETE FROM reviews WHERE review_id = ?";
 
@@ -302,10 +301,10 @@ public class ReviewDbStorage implements ReviewStorage {
                 filmId, reviewId);
     }
 
-    /////////////////// GET_FEED_OF_USER --------------------------------------------------------------------------------
+    /////////////////// CREATE_EVENT --------------------------------------------------------------------------
 
-    private void setFeedEvent(Long id, Long entityId, Operation operation) {
-        FeedEntity feed = FeedEntity.builder()
+    private void createEvent(Long id, Long entityId, Operation operation) {
+        Event feed = Event.builder()
                 .userId(id)
                 .entityId(entityId)
                 .eventType(EventType.REVIEW)
@@ -318,7 +317,7 @@ public class ReviewDbStorage implements ReviewStorage {
         simpleJdbcInsert.execute(feed.toMap());
     }
 
-    private void setFeedEntity(Long reviewId, Operation operation) {
+    private Long findUserId(Long reviewId) {
         String sqlQueryUserId = "SELECT \n" +
                 "                r.user_id  \n" +
                 "                FROM reviews r\n" +

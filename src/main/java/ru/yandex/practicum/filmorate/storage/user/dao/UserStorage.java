@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user.dao;
 
-import ru.yandex.practicum.filmorate.model.FeedEntity;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -31,5 +31,5 @@ public interface UserStorage {
 
     void deleteById(Long id);
 
-    Collection<FeedEntity> findFeedOfUser(Long id);
+    Collection<Event> findEventByUserId(Long id);
 }

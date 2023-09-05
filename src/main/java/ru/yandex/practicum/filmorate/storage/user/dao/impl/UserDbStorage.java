@@ -9,7 +9,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 import ru.yandex.practicum.filmorate.model.EventType;
-import ru.yandex.practicum.filmorate.model.FeedEntity;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.dao.UserStorage;
@@ -34,8 +34,8 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Collection<User> findAll() {
         String sqlQuery = "SELECT \n" +
-                "u.*\n" +
-                "FROM users u";
+                "          u.*\n" +
+                "          FROM users u";
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser);
     }
@@ -58,12 +58,12 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User update(User user) {
         String sqlQuery = "UPDATE users " +
-                "SET\n" +
-                "login = ?,\n" +
-                "birthday = ?,\n" +
-                "email = ?,\n" +
-                "name = ?\n" +
-                "WHERE user_id = ?";
+                "          SET\n" +
+                "          login = ?,\n" +
+                "          birthday = ?,\n" +
+                "          email = ?,\n" +
+                "          name = ?\n" +
+                "          WHERE user_id = ?";
 
         jdbcTemplate.update(sqlQuery,
                 user.getLogin(),
@@ -82,16 +82,16 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Collection<User> findAllFriends(Long id) {
         String sqlQuery = "SELECT \n" +
-                "f.friend_id,\n" +
-                "u.user_id,\n" +
-                "u.login,\n" +
-                "u.birthday,\n" +
-                "u.email,\n" +
-                "u.name\n" +
-                "FROM friends f\n" +
-                "INNER JOIN users u ON f.friend_id = u.user_id\n" +
-                "WHERE " +
-                "f.user_id = ?";
+                "          f.friend_id,\n" +
+                "          u.user_id,\n" +
+                "          u.login,\n" +
+                "          u.birthday,\n" +
+                "          u.email,\n" +
+                "          u.name\n" +
+                "          FROM friends f\n" +
+                "          INNER JOIN users u ON f.friend_id = u.user_id\n" +
+                "          WHERE " +
+                "          f.user_id = ?";
 
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
     }
@@ -99,44 +99,44 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void addFriend(Long id, Long idOfFriend) {
         String sqlQuery = "INSERT INTO friends (user_id, friend_id) " +
-                "VALUES (?, ?)";
+                "          VALUES (?, ?)";
 
         jdbcTemplate.update(sqlQuery, id, idOfFriend);
-        setFeedEvent(id, idOfFriend, Operation.ADD);
+        createEvent(id, idOfFriend, Operation.ADD);
     }
 
     @Override
     public void deleteFriend(Long id, Long idOfFriend) {
         String sqlQuery = "DELETE FROM friends\n" +
-                "WHERE\n" +
-                "user_id = ?\n" +
-                "AND\n" +
-                "friend_id = ?";
+                "          WHERE\n" +
+                "          user_id = ?\n" +
+                "          AND\n" +
+                "          friend_id = ?";
 
         jdbcTemplate.update(sqlQuery, id, idOfFriend);
-        setFeedEvent(id, idOfFriend, Operation.REMOVE);
+        createEvent(id, idOfFriend, Operation.REMOVE);
 
     }
 
     @Override
     public Collection<User> findCommonFriends(Long id, Long idOfFriend) {
-        String sqlQuery = "SELECT\n" +
-                "u.*\n" +
-                "FROM users u\n" +
-                "WHERE u.user_id IN (" +
-                "                    SELECT\n" +
-                "                    f.friend_id AS friend_id \n" +
-                "                    FROM friends f\n" +
-                "                    WHERE \n" +
-                "                    friend_id IN (" +
-                "                                    SELECT\n" +
-                "                                    f.friend_id AS friend_id \n" +
-                "                                    FROM friends f\n" +
-                "                                    WHERE f.user_id = ?\n" +
-                "                                   )\n" +
-                "                    AND\n" +
-                "                    f.user_id = ?\n" +
-                "                   )";
+        String sqlQuery = " SELECT\n" +
+                "           u.*\n" +
+                "           FROM users u\n" +
+                "           WHERE u.user_id IN (" +
+                "                               SELECT\n" +
+                "                               f.friend_id AS friend_id \n" +
+                "                               FROM friends f\n" +
+                "                               WHERE \n" +
+                "                               friend_id IN (" +
+                "                                               SELECT\n" +
+                "                                               f.friend_id AS friend_id \n" +
+                "                                               FROM friends f\n" +
+                "                                               WHERE f.user_id = ?\n" +
+                "                                               )\n" +
+                "                               AND\n" +
+                "                               f.user_id = ?\n" +
+                "                               )";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, idOfFriend);
     }
 
@@ -150,13 +150,13 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User findById(Long id) {
         String sqlQuery = "SELECT\n" +
-                "u.user_id,\n" +
-                "u.login,\n" +
-                "u.birthday,\n" +
-                "u.email,\n" +
-                "u.name\n" +
-                "FROM users u\n" +
-                "WHERE u.user_id = ?";
+                "          u.user_id,\n" +
+                "          u.login,\n" +
+                "          u.birthday,\n" +
+                "          u.email,\n" +
+                "          u.name\n" +
+                "          FROM users u\n" +
+                "          WHERE u.user_id = ?";
 
         return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, id);
     }
@@ -192,18 +192,18 @@ public class UserDbStorage implements UserStorage {
         log.info("Пользователь с идентификатором {} удален.", id);
     }
 
-    public Collection<FeedEntity> findFeedOfUser(Long id) {
+    public Collection<Event> findEventByUserId(Long id) {
         String sqlQuery = "SELECT \n" +
-                "f.event_id,\n" +
-                "f.user_id,\n" +
-                "f.entity_id,\n" +
-                "f.event_type,\n" +
-                "f.operation,\n" +
-                "f.event_timestamp \n" +
-                "FROM feed f\n" +
-                "WHERE f.user_id = ?";
+                "          f.event_id,\n" +
+                "          f.user_id,\n" +
+                "          f.entity_id,\n" +
+                "          f.event_type,\n" +
+                "          f.operation,\n" +
+                "          f.event_timestamp \n" +
+                "          FROM feed f\n" +
+                "          WHERE f.user_id = ?";
 
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFeed, id);
+        return jdbcTemplate.query(sqlQuery, this::mapRowToEvent, id);
     }
 
     // helpers methods for a CREATE method------------------------------------------------------------------------------
@@ -228,10 +228,10 @@ public class UserDbStorage implements UserStorage {
 
     private Map<Long, Boolean> makeFriendsMap(Long id) {
         String sqlQuery = "SELECT\n" +
-                "f.friend_id,\n" +
-                "f.status\n" +
-                "FROM friends f\n" +
-                "WHERE f.user_id = ?";
+                "          f.friend_id,\n" +
+                "          f.status\n" +
+                "          FROM friends f\n" +
+                "          WHERE f.user_id = ?";
 
         return jdbcTemplate.query(sqlQuery, rs -> {
             Map<Long, Boolean> mapOfFriends = new HashMap<>();
@@ -247,7 +247,7 @@ public class UserDbStorage implements UserStorage {
 
     private void setFriends(User user) {
         String sqlQuery = "INSERT INTO friends (user_id, friend_id, status) " +
-                "VALUES (?, ?, ?)";
+                "          VALUES (?, ?, ?)";
 
         user.getFriends()
                 .forEach((key, value) -> jdbcTemplate.update(sqlQuery, user.getId(), key, value));
@@ -280,11 +280,11 @@ public class UserDbStorage implements UserStorage {
 
     private Map<Long, Boolean> getUsers(User user) {
         String sqlQuery = "SELECT \n" +
-                "f.friend_id,\n" +
-                "f.status,\n" +
-                "FROM\n" +
-                "friends f\n" +
-                "WHERE f.user_id = ?";
+                "          f.friend_id,\n" +
+                "          f.status,\n" +
+                "          FROM\n" +
+                "          friends f\n" +
+                "          WHERE f.user_id = ?";
 
         return jdbcTemplate.query(sqlQuery, rs -> {
             Map<Long, Boolean> mapOfFriends = new HashMap<>();
@@ -307,19 +307,19 @@ public class UserDbStorage implements UserStorage {
 
     private void updateFriendsStatus(User user, Map<Long, Boolean> friends) {
         String sqlQuery = "UPDATE \n" +
-                "friends \n" +
-                "SET status = ? \n" +
-                "WHERE " +
-                "user_id = ? " +
-                "AND " +
-                "friend_id = ?";
+                "          friends \n" +
+                "          SET status = ? \n" +
+                "          WHERE " +
+                "          user_id = ? " +
+                "          AND " +
+                "          friend_id = ?";
 
         friends.forEach((key, value) -> jdbcTemplate.update(sqlQuery, value, user.getId(), key));
     }
 
-    // helpers methods for a GET_FEED_OF_USER method--------------------------------------------------------------------
+    // helpers methods for a FIND_EVENT_BY_USER_ID method--------------------------------------------------------------------
 
-    private FeedEntity mapRowToFeed(ResultSet rs, Integer rowNum) throws SQLException {
+    private Event mapRowToEvent(ResultSet rs, Integer rowNum) throws SQLException {
         Long eventId = rs.getLong("event_id");
         Long userId = rs.getLong("user_id");
         Long entityId = rs.getLong("entity_id");
@@ -327,7 +327,7 @@ public class UserDbStorage implements UserStorage {
         EventType eventType = EventType.valueOf(rs.getString("event_type"));
         Operation operation = Operation.valueOf(rs.getString("operation"));
 
-        return FeedEntity.builder()
+        return Event.builder()
                 .eventId(eventId)
                 .userId(userId)
                 .entityId(entityId)
@@ -337,8 +337,8 @@ public class UserDbStorage implements UserStorage {
                 .build();
     }
 
-    private void setFeedEvent(Long id, Long entityId, Operation operation) {
-        FeedEntity feed = FeedEntity.builder()
+    private void createEvent(Long id, Long entityId, Operation operation) {
+        Event feed = Event.builder()
                 .userId(id)
                 .entityId(entityId)
                 .eventType(EventType.FRIEND)

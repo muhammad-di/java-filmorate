@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import ru.yandex.practicum.filmorate.exception.*;
-import ru.yandex.practicum.filmorate.model.FeedEntity;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.dao.UserStorage;
 import ru.yandex.practicum.filmorate.validation.UserValidation;
@@ -89,9 +89,9 @@ public class UserService {
         storage.deleteById(id);
     }
 
-    public Collection<FeedEntity> findFeedOfUser(Long id) throws UserDoesNotExistException {
+    public Collection<Event> findFeedOfUser(Long id) throws UserDoesNotExistException {
         contains(id);
-        return storage.findFeedOfUser(id);
+        return storage.findEventByUserId(id);
     }
 
     private void contains(Long id) throws UserDoesNotExistException {

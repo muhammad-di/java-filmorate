@@ -14,7 +14,7 @@ import java.util.Objects;
 @Data
 @Builder
 @AllArgsConstructor
-public class FeedEntity {
+public class Event {
     @NotNull(message = "timestamp is mandatory")
     private final Long timestamp;
     @NotNull(message = "eventType is mandatory")
@@ -34,7 +34,7 @@ public class FeedEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        FeedEntity that = (FeedEntity) o;
+        Event that = (Event) o;
         return Objects.equals(eventId, that.eventId);
     }
 
